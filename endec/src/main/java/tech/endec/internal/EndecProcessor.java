@@ -15,17 +15,16 @@ import java.util.Set;
 @SupportedAnnotationTypes("tech.endec.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 public class EndecProcessor extends AbstractProcessor {
-    private final HashSet<TypeElement> decodables = new HashSet<>();
-    private final HashSet<TypeElement> encodables = new HashSet<>();
+    private final HashSet<Integer> identityHashesOfAlreadyProcessedElements = new HashSet<>();
 
-    private EndecWriter writer;
+    private Filer filer;
     private Messager messager;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+        filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
-        writer = new EndecWriter(processingEnv.getFiler(), messager);
     }
 
     @Override
@@ -40,56 +39,39 @@ public class EndecProcessor extends AbstractProcessor {
     }
 
     private void processElement(TypeElement annotation, Element element) {
-        if (element.getKind() == ElementKind.RECORD) {
-            processRecord(annotation, (TypeElement) element);
-        } else {
-            var annotationName = annotation.getSimpleName();
-            var elementKind = element.getKind();
-            var message = "Only records may be annotated with @%s, but %s is a %s"
-                    .formatted(annotationName, element, elementKind);
+        if (element.getKind() != ElementKind.RECORD) {
+            messager.printError("Only records may be annotated with @%s, but %s is a %s"
+                    .formatted(annotation.getSimpleName(), element, element.getKind()), element);
+            return;
+        }
 
-            messager.printError(message, element);
+        var identityHash = System.identityHashCode(element);
+        if (identityHashesOfAlreadyProcessedElements.add(identityHash)) {
+            processRecord((TypeElement) element);
         }
     }
 
-    private void processRecord(TypeElement annotation, TypeElement element) {
-        if (isDecodable(annotation, element)) {
-            System.out.printf("Create decoder for %s%n", element);
-        }
-        if (isEncodable(annotation, element)) {
-            System.out.printf("Create encoder for %s%n", element);
-            var writable = new EndecJavaClass(element, element.getSimpleName() + "$Encoder.java", "se.example");
-            writer.write(writable);
-        }
-    }
+    private void processRecord(TypeElement element) {
+        var isCodable = element.getAnnotation(Codable.class) != null;
+        var isDecodable = element.getAnnotation(Decodable.class) != null;
+        var isEncodable = element.getAnnotation(Encodable.class) != null;
 
-    private boolean isDecodable(TypeElement annotation, TypeElement element) {
-        if (notEqual(annotation, Codable.class) && notEqual(annotation, Decodable.class)) {
-            return false;
+        if (isCodable) {
+            if (isDecodable) {
+                messager.printNote("Using @Decodable becomes unnecessary when @Codable is used.", element);
+            }
+            if (isEncodable) {
+                messager.printNote("Using @Encodable becomes unnecessary when @Codable is used.", element);
+            }
         }
-        if (!decodables.add(element)) {
-            messager.printWarning("This record should only be annotated " +
-                    "with one of @Codable and @Decodable", element);
-            return false;
-        }
-        return true;
-    }
 
-    private boolean isEncodable(TypeElement annotation, TypeElement element) {
-        if (notEqual(annotation, Codable.class) && notEqual(annotation, Encodable.class)) {
-            return false;
+        var generator = new EndecGenerator(element);
+        if (isCodable || isDecodable) {
+            generator.generateDecoder();
         }
-        if (!encodables.add(element)) {
-            messager.printWarning("This record should only be annotated " +
-                    "with one of @Codable and @Encodable", element);
-            return false;
+        if (isCodable || isEncodable) {
+            generator.generateEncoder();
         }
-        return true;
-    }
-
-    private boolean notEqual(TypeElement annotationType, Class<?> annotationClass) {
-        var typeName = annotationType.getQualifiedName();
-        var className = annotationClass.getName();
-        return typeName == null || !typeName.contentEquals(className);
+        generator.write(filer);
     }
 }
