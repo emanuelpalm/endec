@@ -1,4 +1,4 @@
-include(
+include \
     "endec",
     "endec-example",
-    "endec-json")
+    "endec-json"

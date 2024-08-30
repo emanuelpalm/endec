@@ -1,0 +1,24 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+subprojects {
+    group = "tech.endec"
+
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            sourceCompatibility = "21"
+            targetCompatibility = "21"
+        }
+    }
+}
