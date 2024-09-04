@@ -1,77 +1,99 @@
 package tech.endec.internal;
 
-import tech.endec.Codable;
-import tech.endec.Decodable;
-import tech.endec.Encodable;
+import jakarta.annotation.Nonnull;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.tools.StandardLocation;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
-@SupportedAnnotationTypes("tech.endec.*")
+@SupportedAnnotationTypes({
+        "tech.endec.Encodable",
+        "tech.endec.Decodable",
+})
 @SupportedSourceVersion(SourceVersion.RELEASE_22)
-public class EndecProcessor extends AbstractProcessor {
+public class EndecProcessor extends AbstractProcessor
+{
     private final HashSet<Integer> identityHashesOfAlreadyProcessedElements = new HashSet<>();
 
     private Filer filer;
     private Messager messager;
 
     @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
+    public synchronized void init(@Nonnull ProcessingEnvironment processingEnv)
+    {
         super.init(processingEnv);
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
     }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    public boolean process(@Nonnull Set<? extends TypeElement> annotations, @Nonnull RoundEnvironment roundEnv)
+    {
         for (var annotation : annotations) {
-            var elements = roundEnv.getElementsAnnotatedWith(annotation);
-            for (var element : elements) {
-                processElement(annotation, element);
+            for (var element : roundEnv.getElementsAnnotatedWith(annotation)) {
+                processElement(element);
             }
         }
         return true;
     }
 
-    private void processElement(TypeElement annotation, Element element) {
-        if (element.getKind() != ElementKind.RECORD) {
-            messager.printError("Only records may be annotated with @%s, but %s is a %s"
-                    .formatted(annotation.getSimpleName(), element, element.getKind()), element);
+    private void processElement(@Nonnull Element element)
+    {
+        var identityHash = System.identityHashCode(element);
+        if (!identityHashesOfAlreadyProcessedElements.add(identityHash)) {
             return;
         }
 
-        var identityHash = System.identityHashCode(element);
-        if (identityHashesOfAlreadyProcessedElements.add(identityHash)) {
-            processRecord((TypeElement) element);
+        if (element.getKind() != ElementKind.RECORD) {
+            messager.printError("Only records are supported, but %s is a %s"
+                    .formatted(element, element.getKind()), element);
+            return;
         }
-    }
 
-    private void processRecord(TypeElement element) {
-        var isCodable = element.getAnnotation(Codable.class) != null;
-        var isDecodable = element.getAnnotation(Decodable.class) != null;
-        var isEncodable = element.getAnnotation(Encodable.class) != null;
+        var record = new EndecElement.Record((TypeElement) element);
+        try {
+            var code = new StringBuilder();
 
-        if (isCodable) {
-            if (isDecodable) {
-                messager.printNote("The @Decodable annotation becomes unnecessary when @Codable is used", element);
+            for (var component : record.components()) {
+                var name = component.name();
+                code.append("        map.putString(\"").append(name).append("\"); ");
+                code.append("map.putString(input.").append(name).append("());\n");
             }
-            if (isEncodable) {
-                messager.printNote("The @Encodable annotation becomes unnecessary when @Codable is used", element);
-            }
-        }
 
-        var generator = new EndecGenerator(element);
-        if (isCodable || isDecodable) {
-            generator.generateDecoder();
+            var location = StandardLocation.SOURCE_OUTPUT;
+            var moduleAndPackage = record.moduleAndPackage();
+            var simpleName = record.simpleName();
+            var resource = filer.createResource(location, moduleAndPackage, simpleName + "Encoder.java");
+            try (var output = resource.openOutputStream()) {
+                output.write("""
+                        package %s;
+                        
+                        import tech.endec.Encoder;
+                        
+                        public final class %sEncoder {
+                            private %sEncoder() {}
+                        
+                            public static void encode(%s input, Encoder encoder)
+                            {
+                                var map = encoder.encodeMap();
+
+                        %s
+                                map.endMap();
+                            }
+                        }
+                        """.formatted(moduleAndPackage, simpleName, simpleName, simpleName, code)
+                        .getBytes(StandardCharsets.UTF_8));
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        if (isCodable || isEncodable) {
-            generator.generateEncoder();
-        }
-        generator.write(filer);
     }
 }

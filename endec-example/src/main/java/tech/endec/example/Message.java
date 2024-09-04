@@ -1,7 +1,8 @@
 package tech.endec.example;
 
-import tech.endec.Codable;
+import tech.endec.Decodable;
+import tech.endec.Encodable;
 
-@Codable
-public record Message(String text, String sender, String timestamp) {
-}
+@Encodable
+@Decodable
+public record Message(String text, String sender, String timestamp) { }
