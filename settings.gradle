@@ -1,4 +1,6 @@
 include \
-    "endec",
-    "endec-example",
-    "endec-json"
+        "endec",
+        "endec-example",
+        "endec-interface",
+        "endec-json",
+        'endec-strconv'
