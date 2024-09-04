@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @SupportedAnnotationTypes("tech.endec.*")
-@SupportedSourceVersion(SourceVersion.RELEASE_21)
+@SupportedSourceVersion(SourceVersion.RELEASE_22)
 public class EndecProcessor extends AbstractProcessor {
     private final HashSet<Integer> identityHashesOfAlreadyProcessedElements = new HashSet<>();
 
@@ -58,10 +58,10 @@ public class EndecProcessor extends AbstractProcessor {
 
         if (isCodable) {
             if (isDecodable) {
-                messager.printNote("Using @Decodable becomes unnecessary when @Codable is used.", element);
+                messager.printNote("The @Decodable annotation becomes unnecessary when @Codable is used", element);
             }
             if (isEncodable) {
-                messager.printNote("Using @Encodable becomes unnecessary when @Codable is used.", element);
+                messager.printNote("The @Encodable annotation becomes unnecessary when @Codable is used", element);
             }
         }
 
