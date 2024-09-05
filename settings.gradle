@@ -1,6 +1,5 @@
 include \
         "endec",
         "endec-example",
-        "endec-interface",
         "endec-json",
-        'endec-strconv'
+        "endec-type"

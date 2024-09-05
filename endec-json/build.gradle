@@ -5,9 +5,8 @@ plugins {
 version = "0.0.1"
 
 dependencies {
-    api project(":endec-interface")
+    api project(":endec-type")
 
-    implementation project(":endec-strconv")
     implementation "jakarta.annotation:jakarta.annotation-api:3.0.0"
 
     testImplementation platform("org.junit:junit-bom:5.10.0")

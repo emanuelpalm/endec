@@ -17,15 +17,16 @@
 // The code serving as foundation for this implementation can be found at
 // https://github.com/rust-lang/rust/blob/b8214dc6c6fc20d0a660fb5700dca9ebf51ebe89/src/libcore/fmt/num.rs#L188-L266.
 
-package tech.endec.strconv;
+package tech.endec.json.strconv;
 
 import jakarta.annotation.Nonnull;
 
-public final class LongToASCII
-{
-    public static final int BUFFER_SIZE = 20;
+import java.io.IOException;
+import java.io.OutputStream;
 
-    private static final byte[] DECIMAL_DIGITS_LOOKUP_TABLE = {
+public final class LongToJson
+{
+    private static final byte[] TABLE_DECIMAL_DIGIT_PAIRS = {
             '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', '0', '5', '0', '6', '0', '7', '0', '8', '0', '9',
             '1', '0', '1', '1', '1', '2', '1', '3', '1', '4', '1', '5', '1', '6', '1', '7', '1', '8', '1', '9',
             '2', '0', '2', '1', '2', '2', '2', '3', '2', '4', '2', '5', '2', '6', '2', '7', '2', '8', '2', '9',
@@ -41,27 +42,27 @@ public final class LongToASCII
     private static final byte[] STRING_MIN_VALUE = {
             '-', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5', '4', '7', '7', '5', '8', '0', '8'};
 
-    private LongToASCII() { }
+    private LongToJson() { }
 
-    public static int format(long value, @Nonnull byte[] buffer)
+    public static void format(long value, @Nonnull OutputStream output) throws IOException
     {
-        assert buffer.length >= BUFFER_SIZE;
-
         final boolean isNegative;
         if (value < 0) {
             // Because long is a two's complement representation, the absolute
-            // value of Long.MIN_VALUE is one larger than Long.MAX_VALUE, so we
-            // deal with the special case of `value` being equal to it by
-            // writing out a constant string.
+            // value of Long.MIN_VALUE is one larger than Long.MAX_VALUE. We
+            // deal with the special case of `value` being equal to it by just
+            // writing out a constant string and returning.
             if (value == Long.MIN_VALUE) {
-                System.arraycopy(STRING_MIN_VALUE, 0, buffer, 0, STRING_MIN_VALUE.length);
-                return STRING_MIN_VALUE.length;
+                output.write(STRING_MIN_VALUE);
+                return;
             }
             value = -value;
             isNegative = true;
         } else {
             isNegative = false;
         }
+
+        var buffer = new byte[20];
 
         // We start at the end of the output buffer and move downwards.
         var index = buffer.length;
@@ -75,10 +76,10 @@ public final class LongToASCII
             var d2 = (int) (remainder % 100) << 1;
             index -= 4;
 
-            buffer[index] = DECIMAL_DIGITS_LOOKUP_TABLE[d1];
-            buffer[index + 1] = DECIMAL_DIGITS_LOOKUP_TABLE[d1 + 1];
-            buffer[index + 2] = DECIMAL_DIGITS_LOOKUP_TABLE[d2];
-            buffer[index + 3] = DECIMAL_DIGITS_LOOKUP_TABLE[d2 + 1];
+            buffer[index] = TABLE_DECIMAL_DIGIT_PAIRS[d1];
+            buffer[index + 1] = TABLE_DECIMAL_DIGIT_PAIRS[d1 + 1];
+            buffer[index + 2] = TABLE_DECIMAL_DIGIT_PAIRS[d2];
+            buffer[index + 3] = TABLE_DECIMAL_DIGIT_PAIRS[d2 + 1];
         }
 
         // If we reach here, `value <= 9999`, which means that we will need to
@@ -90,8 +91,8 @@ public final class LongToASCII
             value /= 100;
             index -= 2;
 
-            buffer[index] = DECIMAL_DIGITS_LOOKUP_TABLE[d1];
-            buffer[index + 1] = DECIMAL_DIGITS_LOOKUP_TABLE[d1 + 1];
+            buffer[index] = TABLE_DECIMAL_DIGIT_PAIRS[d1];
+            buffer[index + 1] = TABLE_DECIMAL_DIGIT_PAIRS[d1 + 1];
         }
 
         // Decode last 1 or 2 digits.
@@ -102,8 +103,8 @@ public final class LongToASCII
             var d1 = (int) value << 1;
             index -= 2;
 
-            buffer[index] = DECIMAL_DIGITS_LOOKUP_TABLE[d1];
-            buffer[index + 1] = DECIMAL_DIGITS_LOOKUP_TABLE[d1 + 1];
+            buffer[index] = TABLE_DECIMAL_DIGIT_PAIRS[d1];
+            buffer[index + 1] = TABLE_DECIMAL_DIGIT_PAIRS[d1 + 1];
         }
 
         if (isNegative) {
@@ -111,6 +112,6 @@ public final class LongToASCII
             buffer[index] = (byte) '-';
         }
 
-        return buffer.length - index;
+        output.write(buffer, index, buffer.length - index);
     }
 }
