@@ -1,4 +1,4 @@
-package tech.endec.ex;
+package tech.endec.type.ex;
 
 import java.io.IOException;
 

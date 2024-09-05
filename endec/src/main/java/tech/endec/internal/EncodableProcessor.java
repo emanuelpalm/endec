@@ -7,24 +7,22 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.tools.StandardLocation;
+import javax.lang.model.util.Elements;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
-@SupportedAnnotationTypes({
-        "tech.endec.Encodable",
-        "tech.endec.Decodable",
-})
+@SupportedAnnotationTypes("tech.endec.Encodable")
 @SupportedSourceVersion(SourceVersion.RELEASE_22)
-public class EndecProcessor extends AbstractProcessor
+public class EncodableProcessor extends AbstractProcessor
 {
     private final HashSet<Integer> identityHashesOfAlreadyProcessedElements = new HashSet<>();
 
     private Filer filer;
     private Messager messager;
+    private Elements elements;
 
     @Override
     public synchronized void init(@Nonnull ProcessingEnvironment processingEnv)
@@ -32,6 +30,7 @@ public class EndecProcessor extends AbstractProcessor
         super.init(processingEnv);
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
+        elements = processingEnv.getElementUtils();
     }
 
     @Override
@@ -58,25 +57,24 @@ public class EndecProcessor extends AbstractProcessor
             return;
         }
 
-        var record = new EndecElement.Record((TypeElement) element);
         try {
+            var typeElement = (TypeElement) element;
             var code = new StringBuilder();
 
-            for (var component : record.components()) {
-                var name = component.name();
-                code.append("        map.putString(\"").append(name).append("\"); ");
-                code.append("map.putString(input.").append(name).append("());\n");
+            for (var component : typeElement.getRecordComponents()) {
+                var name = component.getSimpleName();
+                code.append("        map.putString(\"").append(name).append("\");\n");
+                code.append("        map.putString(input.").append(name).append("());\n");
             }
 
-            var location = StandardLocation.SOURCE_OUTPUT;
-            var moduleAndPackage = record.moduleAndPackage();
-            var simpleName = record.simpleName();
-            var resource = filer.createResource(location, moduleAndPackage, simpleName + "Encoder.java");
+            var packageElement = elements.getPackageOf(element);
+            var simpleName = element.getSimpleName();
+            var resource = filer.createSourceFile(typeElement.getQualifiedName() + "Encoder");
             try (var output = resource.openOutputStream()) {
                 output.write("""
                         package %s;
                         
-                        import tech.endec.Encoder;
+                        import tech.endec.type.Encoder;
                         
                         public final class %sEncoder {
                             private %sEncoder() {}
@@ -84,12 +82,10 @@ public class EndecProcessor extends AbstractProcessor
                             public static void encode(%s input, Encoder encoder)
                             {
                                 var map = encoder.encodeMap();
-
-                        %s
-                                map.endMap();
+                        %s        map.endMap();
                             }
                         }
-                        """.formatted(moduleAndPackage, simpleName, simpleName, simpleName, code)
+                        """.formatted(packageElement, simpleName, simpleName, simpleName, code)
                         .getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e) {

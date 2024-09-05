@@ -1,9 +1,11 @@
 package tech.endec.json;
 
 import jakarta.annotation.Nonnull;
-import tech.endec.*;
-import tech.endec.ex.EncoderIOException;
-import tech.endec.ex.NotEncodableException;
+import tech.endec.type.Encoder;
+import tech.endec.type.ListEncoder;
+import tech.endec.type.MapEncoder;
+import tech.endec.type.ex.EncoderIOException;
+import tech.endec.type.ex.NotEncodableException;
 import tech.endec.strconv.LongToASCII;
 
 import java.io.IOException;

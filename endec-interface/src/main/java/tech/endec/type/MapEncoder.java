@@ -1,4 +1,4 @@
-package tech.endec;
+package tech.endec.type;
 
 import jakarta.annotation.Nonnull;
 
