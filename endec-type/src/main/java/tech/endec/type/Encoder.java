@@ -2,6 +2,7 @@ package tech.endec.type;
 
 import jakarta.annotation.Nonnull;
 
+@SuppressWarnings("unused")
 public interface Encoder
 {
     void encodeNull();
