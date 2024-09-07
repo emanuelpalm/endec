@@ -17,8 +17,8 @@ public class DoubleToJson
             var string = Double.toString(value);
             output.write(string.getBytes(StandardCharsets.US_ASCII));
         } else {
-            throw new NotEncodableException("Only finite floating point " +
-                    "numbers can be represented as JSON");
+            throw new NotEncodableException(value, "Only finite floating " +
+                    "point numbers can be represented as JSON");
         }
     }
 }

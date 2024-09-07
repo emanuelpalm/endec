@@ -38,7 +38,7 @@ public class JsonEncoder implements Encoder
 
     @Override public void encodeChar(char value)
     {
-        throw new NotEncodableException("Plain characters cannot be represented as JSON");
+        throw new NotEncodableException(value, "plain characters cannot be represented as JSON");
     }
 
     @Override public void encodeString(@Nonnull String value) throws IOException
@@ -48,7 +48,7 @@ public class JsonEncoder implements Encoder
 
     @Override public void encodeByteArray(@Nonnull byte[] value)
     {
-        throw new NotEncodableException("Plain byte arrays cannot be represented as JSON");
+        throw new NotEncodableException(value, "plain byte arrays cannot be represented as JSON");
     }
 
     @Nonnull @Override public ListEncoder encodeList() throws IOException

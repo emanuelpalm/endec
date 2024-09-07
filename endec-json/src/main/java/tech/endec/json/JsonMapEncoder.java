@@ -1,6 +1,7 @@
 package tech.endec.json;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import tech.endec.json.strconv.*;
 import tech.endec.type.ListEncoder;
 import tech.endec.type.MapEncoder;
@@ -20,31 +21,31 @@ class JsonMapEncoder implements MapEncoder
 
     @Override public void encodeNull() throws IOException
     {
-        writeColonIfAtValueOrThrow("The null value cannot be used as a key in JSON");
+        writeColonIfAtValueOrThrow(null, "the null value cannot be used as a key in JSON");
         NullToJson.format(output);
     }
 
     @Override public void encodeBoolean(boolean value) throws IOException
     {
-        writeColonIfAtValueOrThrow("Booleans cannot be used as keys in JSON");
+        writeColonIfAtValueOrThrow(value, "booleans cannot be used as keys in JSON");
         BooleanToJson.format(value, output);
     }
 
     @Override public void encodeLong(long value) throws IOException
     {
-        writeColonIfAtValueOrThrow("Integers cannot be used as keys in JSON");
+        writeColonIfAtValueOrThrow(value, "integers cannot be used as keys in JSON");
         LongToJson.format(value, output);
     }
 
     @Override public void encodeDouble(double value) throws IOException
     {
-        writeColonIfAtValueOrThrow("Floats cannot be used as keys in JSON");
+        writeColonIfAtValueOrThrow(value, "floats cannot be used as keys in JSON");
         DoubleToJson.format(value, output);
     }
 
     @Override public void encodeChar(char value)
     {
-        throw new NotEncodableException("Plain characters cannot be represented as JSON");
+        throw new NotEncodableException(value, "plain characters cannot be represented as JSON");
     }
 
     @Override public void encodeString(@Nonnull String value) throws IOException
@@ -55,19 +56,19 @@ class JsonMapEncoder implements MapEncoder
 
     @Override public void encodeByteArray(@Nonnull byte[] value)
     {
-        throw new NotEncodableException("Plain byte arrays cannot be represented as JSON");
+        throw new NotEncodableException(value, "plain byte arrays cannot be represented as JSON");
     }
 
     @Nonnull @Override public ListEncoder encodeList() throws IOException
     {
-        writeColonIfAtValueOrThrow("Lists cannot be used as keys in JSON");
+        writeColonIfAtValueOrThrow(null, "lists cannot be used as keys in JSON");
         output.write((byte) '[');
         return new JsonListEncoder(output);
     }
 
     @Nonnull @Override public MapEncoder encodeMap() throws IOException
     {
-        writeColonIfAtValueOrThrow("Maps cannot be used as keys in JSON");
+        writeColonIfAtValueOrThrow(null, "maps cannot be used as keys in JSON");
         output.write((byte) '{');
         return new JsonMapEncoder(output);
     }
@@ -87,12 +88,12 @@ class JsonMapEncoder implements MapEncoder
         }
     }
 
-    private void writeColonIfAtValueOrThrow(@Nonnull String message) throws IOException
+    private void writeColonIfAtValueOrThrow(@Nullable Object value, @Nonnull String message) throws IOException
     {
         if (isAtValue) {
             output.write((byte) ':');
         } else {
-            throw new NotEncodableException(message);
+            throw new NotEncodableException(value, message);
         }
     }
 
