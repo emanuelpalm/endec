@@ -59,14 +59,6 @@ public class EncodableProcessor extends AbstractProcessor
 
         try {
             var typeElement = (TypeElement) element;
-            var code = new StringBuilder();
-
-            for (var component : typeElement.getRecordComponents()) {
-                var name = component.getSimpleName();
-                code.append("        map.putString(\"").append(name).append("\");\n");
-                code.append("        map.putString(input.").append(name).append("());\n");
-            }
-
             var packageElement = elements.getPackageOf(element);
             var simpleName = element.getSimpleName();
             var resource = filer.createSourceFile(typeElement.getQualifiedName() + "Encoder");
@@ -75,18 +67,30 @@ public class EncodableProcessor extends AbstractProcessor
                         package %s;
                         
                         import tech.endec.type.Encoder;
+                        import java.io.IOException;
                         
                         public final class %sEncoder {
                             private %sEncoder() {}
                         
-                            public static void encode(%s input, Encoder encoder)
+                            public static void encode(%s input, Encoder encoder) throws IOException
                             {
-                                var map = encoder.encodeMap();
-                        %s        map.endMap();
+                                try (var map = encoder.encodeMap()) {
+                        """.formatted(packageElement, simpleName, simpleName, simpleName)
+                        .getBytes(StandardCharsets.UTF_8));
+
+                for (var component : typeElement.getRecordComponents()) {
+                    var name = component.getSimpleName();
+                    output.write("""
+                                        map.encodeString("%s");
+                                        map.encodeString(input.%s());
+                            """.formatted(name, name).getBytes(StandardCharsets.UTF_8));
+                }
+
+                output.write("""
+                                }
                             }
                         }
-                        """.formatted(packageElement, simpleName, simpleName, simpleName, code)
-                        .getBytes(StandardCharsets.UTF_8));
+                        """.getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

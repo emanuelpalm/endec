@@ -1,35 +1,8 @@
 package tech.endec.type;
 
-import jakarta.annotation.Nonnull;
+import java.io.IOException;
 
-@SuppressWarnings("unused")
-public interface MapEncoder
+public interface MapEncoder extends Encoder, AutoCloseable
 {
-    void putNull();
-
-    void putBoolean(boolean value);
-
-    default void putByte(byte value) { putLong(value); }
-
-    default void putShort(short value) { putLong(value); }
-
-    default void putInt(int value) { putLong(value); }
-
-    void putLong(long value);
-
-    default void putFloat(float value) { putDouble(value); }
-
-    void putDouble(double value);
-
-    void putChar(char value);
-
-    void putString(@Nonnull String value);
-
-    void putByteArray(@Nonnull byte[] value);
-
-    @Nonnull ListEncoder putList();
-
-    @Nonnull MapEncoder putMap();
-
-    void endMap();
+    @Override void close() throws IOException;
 }
