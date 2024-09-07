@@ -15,7 +15,7 @@ class MessageTest
     {
         var m = new Message("Hello, World!", "Endec", "2024-09-04T22:54:42Z");
         var o = new ByteArrayOutputStream();
-        var e = new JsonEncoder(o);
+        var e = JsonEncoder.from(o);
         MessageEncoder.encode(m, e);
         assertEquals("{\"text\":\"Hello, World!\",\"sender\":\"Endec\",\"timestamp\":\"2024-09-04T22:54:42Z\"}", o.toString(StandardCharsets.UTF_8));
     }
