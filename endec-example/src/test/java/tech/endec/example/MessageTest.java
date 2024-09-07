@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MessageTest
 {
     @Test
-    void encode_producesExpectedOutput() throws Exception
+    void encode_producesExpectedOutput()
     {
         var m = new Message("Hello, World!", "Endec", "2024-09-04T22:54:42Z");
         var o = new ByteArrayOutputStream();

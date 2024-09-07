@@ -1,26 +1,127 @@
 package tech.endec.json;
 
 import jakarta.annotation.Nonnull;
+import tech.endec.json.strconv.*;
+import tech.endec.type.Encoder;
+import tech.endec.type.ex.EncoderOutputException;
+import tech.endec.type.ex.EncoderStateException;
+import tech.endec.type.ex.NotEncodableException;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class JsonEncoder extends JsonBaseEncoder
+public abstract class JsonEncoder implements Encoder
 {
-    private boolean isUsed = false;
+    private boolean isAwaitingConsumer = false;
 
-    public JsonEncoder(@Nonnull OutputStream output)
+    public static @Nonnull JsonEncoder from(@Nonnull OutputStream output)
     {
-        super(output);
+        return new JsonRootEncoder(output);
     }
 
-    @Override protected void onEncode() throws IOException
+    protected abstract OutputStream getOutput();
+
+    @Override public void encodeNull()
     {
-        if (!isUsed) {
-            isUsed = true;
-            super.onEncode();
-            return;
+        onEncode();
+        throwIfAwaitingConsumer();
+        NullToJson.format(getOutput());
+    }
+
+    @Override public void encodeBoolean(boolean value)
+    {
+        onEncode();
+        throwIfAwaitingConsumer();
+        BooleanToJson.format(value, getOutput());
+    }
+
+    @Override public void encodeLong(long value)
+    {
+        onEncode();
+        throwIfAwaitingConsumer();
+        LongToJson.format(value, getOutput());
+    }
+
+    @Override public void encodeDouble(double value)
+    {
+        onEncode();
+        throwIfAwaitingConsumer();
+        DoubleToJson.format(value, getOutput());
+    }
+
+    @Override public void encodeChar(char value)
+    {
+        onEncode();
+        throwIfAwaitingConsumer();
+        throw new NotEncodableException(value, "plain characters cannot be represented as JSON");
+    }
+
+    @Override public void encodeString(@Nonnull String value)
+    {
+        onEncode();
+        throwIfAwaitingConsumer();
+        StringToJson.format(value, getOutput());
+    }
+
+    @Override public void encodeByteArray(@Nonnull byte[] value)
+    {
+        onEncode();
+        throwIfAwaitingConsumer();
+        throw new NotEncodableException(value, "plain byte arrays cannot be represented as JSON");
+    }
+
+    @Override public void encodeList(int size, @Nonnull Consumer consumer)
+    {
+        try {
+            onEncode();
+
+            throwIfAwaitingConsumer();
+            isAwaitingConsumer = true;
+
+            var output = getOutput();
+            output.write((byte) '[');
+
+            var encoder = new JsonListEncoder(output, size);
+            consumer.encode(encoder);
+            encoder.end();
+
+            output.write((byte) ']');
+
+            isAwaitingConsumer = false;
+        } catch (IOException exception) {
+            throw new EncoderOutputException(exception);
         }
-        throw new IllegalStateException("encoder already used");
+    }
+
+    @Override public void encodeMap(int size, @Nonnull Consumer consumer)
+    {
+        try {
+            onEncode();
+
+            throwIfAwaitingConsumer();
+            isAwaitingConsumer = true;
+
+            var output = getOutput();
+            output.write((byte) '{');
+
+            var encoder = new JsonMapEncoder(output, size);
+            consumer.encode(encoder);
+            encoder.end();
+
+            output.write((byte) '}');
+
+            isAwaitingConsumer = false;
+        } catch (IOException exception) {
+            throw new EncoderOutputException(exception);
+        }
+    }
+
+    protected abstract void onEncode();
+
+    private void throwIfAwaitingConsumer()
+    {
+        if (isAwaitingConsumer) {
+            throw new EncoderStateException("waiting for another encoding to finish");
+        }
     }
 }

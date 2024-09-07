@@ -62,6 +62,7 @@ public class EncodableProcessor extends AbstractProcessor
             var packageElement = elements.getPackageOf(element);
             var simpleName = element.getSimpleName();
             var resource = filer.createSourceFile(typeElement.getQualifiedName() + "Encoder");
+            var components = typeElement.getRecordComponents();
             try (var output = resource.openOutputStream()) {
                 output.write("""
                         package %s;
@@ -72,13 +73,13 @@ public class EncodableProcessor extends AbstractProcessor
                         public final class %sEncoder {
                             private %sEncoder() {}
                         
-                            public static void encode(%s input, Encoder encoder) throws IOException
+                            public static void encode(%s input, Encoder encoder)
                             {
-                                try (var map = encoder.encodeMap()) {
-                        """.formatted(packageElement, simpleName, simpleName, simpleName)
+                                encoder.encodeMap(%d, map -> {
+                        """.formatted(packageElement, simpleName, simpleName, simpleName, components.size())
                         .getBytes(StandardCharsets.UTF_8));
 
-                for (var component : typeElement.getRecordComponents()) {
+                for (var component : components) {
                     var name = component.getSimpleName();
                     output.write("""
                                         map.encodeString("%s");
@@ -87,7 +88,7 @@ public class EncodableProcessor extends AbstractProcessor
                 }
 
                 output.write("""
-                                }
+                                });
                             }
                         }
                         """.getBytes(StandardCharsets.UTF_8));
