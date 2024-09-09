@@ -20,10 +20,7 @@
 package tech.endec.json.strconv;
 
 import jakarta.annotation.Nonnull;
-import tech.endec.type.ex.EncoderOutputException;
-
-import java.io.IOException;
-import java.io.OutputStream;
+import tech.endec.type.EncoderOutput;
 
 public final class LongToJson
 {
@@ -45,78 +42,74 @@ public final class LongToJson
 
     private LongToJson() {}
 
-    public static void format(long value, @Nonnull OutputStream output)
+    public static void format(long value, @Nonnull EncoderOutput output)
     {
-        try {
-            final boolean isNegative;
-            if (value < 0) {
-                // Because long is a two's complement representation, the absolute
-                // value of Long.MIN_VALUE is one larger than Long.MAX_VALUE. We
-                // deal with the special case of `value` being equal to it by just
-                // writing out a constant string and returning.
-                if (value == Long.MIN_VALUE) {
-                    output.write(STRING_MIN_VALUE);
-                    return;
-                }
-                value = -value;
-                isNegative = true;
-            } else {
-                isNegative = false;
+        final boolean isNegative;
+        if (value < 0) {
+            // Because long is a two's complement representation, the absolute
+            // value of Long.MIN_VALUE is one larger than Long.MAX_VALUE. We
+            // deal with the special case of `value` being equal to it by just
+            // writing out a constant string and returning.
+            if (value == Long.MIN_VALUE) {
+                output.write(STRING_MIN_VALUE);
+                return;
             }
-
-            var buffer = new byte[20];
-
-            // We start at the end of the output buffer and move downwards.
-            var index = buffer.length;
-
-            // Eagerly decode 4 digits at a time.
-            while (value >= 10000) {
-                var remainder = (value % 10000);
-                value /= 10000;
-
-                var d1 = (int) (remainder / 100) << 1;
-                var d2 = (int) (remainder % 100) << 1;
-                index -= 4;
-
-                buffer[index] = TABLE_DECIMAL_DIGIT_PAIRS[d1];
-                buffer[index + 1] = TABLE_DECIMAL_DIGIT_PAIRS[d1 + 1];
-                buffer[index + 2] = TABLE_DECIMAL_DIGIT_PAIRS[d2];
-                buffer[index + 3] = TABLE_DECIMAL_DIGIT_PAIRS[d2 + 1];
-            }
-
-            // If we reach here, `value <= 9999`, which means that we will need to
-            // write at most 4 more digits.
-
-            // Decode 2 more digits, if >2 digits.
-            if (value >= 100) {
-                var d1 = (int) (value % 100) << 1;
-                value /= 100;
-                index -= 2;
-
-                buffer[index] = TABLE_DECIMAL_DIGIT_PAIRS[d1];
-                buffer[index + 1] = TABLE_DECIMAL_DIGIT_PAIRS[d1 + 1];
-            }
-
-            // Decode last 1 or 2 digits.
-            if (value < 10) {
-                index -= 1;
-                buffer[index] = (byte) (((byte) '0') + value);
-            } else {
-                var d1 = (int) value << 1;
-                index -= 2;
-
-                buffer[index] = TABLE_DECIMAL_DIGIT_PAIRS[d1];
-                buffer[index + 1] = TABLE_DECIMAL_DIGIT_PAIRS[d1 + 1];
-            }
-
-            if (isNegative) {
-                index -= 1;
-                buffer[index] = (byte) '-';
-            }
-
-            output.write(buffer, index, buffer.length - index);
-        } catch (IOException exception) {
-            throw new EncoderOutputException(exception);
+            value = -value;
+            isNegative = true;
+        } else {
+            isNegative = false;
         }
+
+        var buffer = new byte[20];
+
+        // We start at the end of the output buffer and move downwards.
+        var index = buffer.length;
+
+        // Eagerly decode 4 digits at a time.
+        while (value >= 10000) {
+            var remainder = (value % 10000);
+            value /= 10000;
+
+            var d1 = (int) (remainder / 100) << 1;
+            var d2 = (int) (remainder % 100) << 1;
+            index -= 4;
+
+            buffer[index] = TABLE_DECIMAL_DIGIT_PAIRS[d1];
+            buffer[index + 1] = TABLE_DECIMAL_DIGIT_PAIRS[d1 + 1];
+            buffer[index + 2] = TABLE_DECIMAL_DIGIT_PAIRS[d2];
+            buffer[index + 3] = TABLE_DECIMAL_DIGIT_PAIRS[d2 + 1];
+        }
+
+        // If we reach here, `value <= 9999`, which means that we will need to
+        // write at most 4 more digits.
+
+        // Decode 2 more digits, if >2 digits.
+        if (value >= 100) {
+            var d1 = (int) (value % 100) << 1;
+            value /= 100;
+            index -= 2;
+
+            buffer[index] = TABLE_DECIMAL_DIGIT_PAIRS[d1];
+            buffer[index + 1] = TABLE_DECIMAL_DIGIT_PAIRS[d1 + 1];
+        }
+
+        // Decode last 1 or 2 digits.
+        if (value < 10) {
+            index -= 1;
+            buffer[index] = (byte) (((byte) '0') + value);
+        } else {
+            var d1 = (int) value << 1;
+            index -= 2;
+
+            buffer[index] = TABLE_DECIMAL_DIGIT_PAIRS[d1];
+            buffer[index + 1] = TABLE_DECIMAL_DIGIT_PAIRS[d1 + 1];
+        }
+
+        if (isNegative) {
+            index -= 1;
+            buffer[index] = (byte) '-';
+        }
+
+        output.write(buffer, index, buffer.length - index);
     }
 }

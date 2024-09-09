@@ -3,23 +3,20 @@ package tech.endec.json;
 import jakarta.annotation.Nonnull;
 import tech.endec.json.strconv.*;
 import tech.endec.type.Encoder;
-import tech.endec.type.ex.EncoderOutputException;
+import tech.endec.type.EncoderOutput;
 import tech.endec.type.ex.EncoderStateException;
 import tech.endec.type.ex.NotEncodableException;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 public abstract class JsonEncoder implements Encoder
 {
     private boolean isAwaitingConsumer = false;
 
-    public static @Nonnull JsonEncoder from(@Nonnull OutputStream output)
+    public static @Nonnull JsonEncoder from(@Nonnull EncoderOutput output)
     {
         return new JsonRootEncoder(output);
     }
 
-    protected abstract OutputStream getOutput();
+    protected abstract EncoderOutput getOutput();
 
     @Override public void encodeNull()
     {
@@ -72,48 +69,40 @@ public abstract class JsonEncoder implements Encoder
 
     @Override public void encodeList(int size, @Nonnull Consumer consumer)
     {
-        try {
-            onEncode();
+        onEncode();
 
-            throwIfAwaitingConsumer();
-            isAwaitingConsumer = true;
+        throwIfAwaitingConsumer();
+        isAwaitingConsumer = true;
 
-            var output = getOutput();
-            output.write((byte) '[');
+        var output = getOutput();
+        output.write((byte) '[');
 
-            var encoder = new JsonListEncoder(output, size);
-            consumer.encode(encoder);
-            encoder.end();
+        var encoder = new JsonListEncoder(output, size);
+        consumer.encode(encoder);
+        encoder.end();
 
-            output.write((byte) ']');
+        output.write((byte) ']');
 
-            isAwaitingConsumer = false;
-        } catch (IOException exception) {
-            throw new EncoderOutputException(exception);
-        }
+        isAwaitingConsumer = false;
     }
 
     @Override public void encodeMap(int size, @Nonnull Consumer consumer)
     {
-        try {
-            onEncode();
+        onEncode();
 
-            throwIfAwaitingConsumer();
-            isAwaitingConsumer = true;
+        throwIfAwaitingConsumer();
+        isAwaitingConsumer = true;
 
-            var output = getOutput();
-            output.write((byte) '{');
+        var output = getOutput();
+        output.write((byte) '{');
 
-            var encoder = new JsonMapEncoder(output, size);
-            consumer.encode(encoder);
-            encoder.end();
+        var encoder = new JsonMapEncoder(output, size);
+        consumer.encode(encoder);
+        encoder.end();
 
-            output.write((byte) '}');
+        output.write((byte) '}');
 
-            isAwaitingConsumer = false;
-        } catch (IOException exception) {
-            throw new EncoderOutputException(exception);
-        }
+        isAwaitingConsumer = false;
     }
 
     protected abstract void onEncode();

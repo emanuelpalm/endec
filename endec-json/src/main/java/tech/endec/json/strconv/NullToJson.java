@@ -1,10 +1,7 @@
 package tech.endec.json.strconv;
 
 import jakarta.annotation.Nonnull;
-import tech.endec.type.ex.EncoderOutputException;
-
-import java.io.IOException;
-import java.io.OutputStream;
+import tech.endec.type.EncoderOutput;
 
 public class NullToJson
 {
@@ -12,12 +9,8 @@ public class NullToJson
 
     private NullToJson() {}
 
-    public static void format(@Nonnull OutputStream output)
+    public static void format(@Nonnull EncoderOutput output)
     {
-        try {
-            output.write(STRING_NULL);
-        } catch (IOException exception) {
-            throw new EncoderOutputException(exception);
-        }
+        output.write(STRING_NULL);
     }
 }

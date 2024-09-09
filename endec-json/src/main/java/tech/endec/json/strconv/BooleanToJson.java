@@ -1,10 +1,7 @@
 package tech.endec.json.strconv;
 
 import jakarta.annotation.Nonnull;
-import tech.endec.type.ex.EncoderOutputException;
-
-import java.io.IOException;
-import java.io.OutputStream;
+import tech.endec.type.EncoderOutput;
 
 public final class BooleanToJson
 {
@@ -13,12 +10,8 @@ public final class BooleanToJson
 
     private BooleanToJson() {}
 
-    public static void format(boolean value, @Nonnull OutputStream output)
+    public static void format(boolean value, @Nonnull EncoderOutput output)
     {
-        try {
-            output.write(value ? STRING_TRUE : STRING_FALSE);
-        } catch (IOException exception) {
-            throw new EncoderOutputException(exception);
-        }
+        output.write(value ? STRING_TRUE : STRING_FALSE);
     }
 }

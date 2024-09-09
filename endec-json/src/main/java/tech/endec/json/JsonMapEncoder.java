@@ -2,17 +2,14 @@ package tech.endec.json;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import tech.endec.type.EncoderOutput;
 import tech.endec.type.ex.EncoderArgumentException;
-import tech.endec.type.ex.EncoderOutputException;
 import tech.endec.type.ex.EncoderStateException;
 import tech.endec.type.ex.NotEncodableException;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
 class JsonMapEncoder extends JsonEncoder
 {
-    private final @Nonnull OutputStream output;
+    private final @Nonnull EncoderOutput output;
 
     private boolean isAtValue = false;
     private boolean isEnded = false;
@@ -21,7 +18,7 @@ class JsonMapEncoder extends JsonEncoder
     private final int expectedSize;
     private int remainingPairs;
 
-    JsonMapEncoder(@Nonnull OutputStream output, int expectedSize)
+    JsonMapEncoder(@Nonnull EncoderOutput output, int expectedSize)
     {
         if (expectedSize < 0) {
             throw new EncoderArgumentException("expectedSize < 0");
@@ -31,7 +28,7 @@ class JsonMapEncoder extends JsonEncoder
         remainingPairs = expectedSize;
     }
 
-    @Override protected OutputStream getOutput()
+    @Override protected EncoderOutput getOutput()
     {
         return output;
     }
@@ -100,27 +97,23 @@ class JsonMapEncoder extends JsonEncoder
             throw new EncoderStateException("attempting to add key to ended " +
                     "map encoder");
         }
-        try {
-            if (isAtValue) {
-                isAtValue = false;
-                output.write((byte) ':');
-            } else {
-                isAtValue = true;
+        if (isAtValue) {
+            isAtValue = false;
+            output.write((byte) ':');
+        } else {
+            isAtValue = true;
 
-                if (remainingPairs <= 0) {
-                    throw new EncoderStateException(expectedSize + " key/value " +
-                            "pairs already added to encoded map");
-                }
-                remainingPairs -= 1;
-
-                if (isNotEmpty) {
-                    output.write((byte) ',');
-                } else {
-                    isNotEmpty = true;
-                }
+            if (remainingPairs <= 0) {
+                throw new EncoderStateException(expectedSize + " key/value " +
+                        "pairs already added to encoded map");
             }
-        } catch (IOException exception) {
-            throw new EncoderOutputException(exception);
+            remainingPairs -= 1;
+
+            if (isNotEmpty) {
+                output.write((byte) ',');
+            } else {
+                isNotEmpty = true;
+            }
         }
     }
 }

@@ -1,16 +1,13 @@
 package tech.endec.json;
 
 import jakarta.annotation.Nonnull;
+import tech.endec.type.EncoderOutput;
 import tech.endec.type.ex.EncoderArgumentException;
-import tech.endec.type.ex.EncoderOutputException;
 import tech.endec.type.ex.EncoderStateException;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 class JsonListEncoder extends JsonEncoder
 {
-    private final @Nonnull OutputStream output;
+    private final @Nonnull EncoderOutput output;
 
     private boolean isEnded = false;
     private boolean isNotEmpty = false;
@@ -18,7 +15,7 @@ class JsonListEncoder extends JsonEncoder
     private final int expectedSize;
     private int remainingItems;
 
-    JsonListEncoder(@Nonnull OutputStream output, int expectedSize)
+    JsonListEncoder(@Nonnull EncoderOutput output, int expectedSize)
     {
         if (expectedSize < 0) {
             throw new EncoderArgumentException("expectedSize < 0");
@@ -28,7 +25,7 @@ class JsonListEncoder extends JsonEncoder
         remainingItems = expectedSize;
     }
 
-    @Override protected OutputStream getOutput()
+    @Override protected EncoderOutput getOutput()
     {
         return output;
     }
@@ -58,14 +55,10 @@ class JsonListEncoder extends JsonEncoder
         }
         remainingItems -= 1;
 
-        try {
-            if (isNotEmpty) {
-                output.write((byte) ',');
-            } else {
-                isNotEmpty = true;
-            }
-        } catch (IOException exception) {
-            throw new EncoderOutputException(exception);
+        if (isNotEmpty) {
+            output.write((byte) ',');
+        } else {
+            isNotEmpty = true;
         }
     }
 }
