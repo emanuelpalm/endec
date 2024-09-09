@@ -27,11 +27,23 @@ public interface Encoder
 
     void encodeByteArray(@Nonnull byte[] value);
 
-    void encodeList(int size, @Nonnull Consumer consumer);
+    @Nonnull List encodeList(int size);
 
-    void encodeMap(int size, @Nonnull Consumer consumer);
+    @Nonnull Map encodeMap(int size);
 
-    interface Consumer {
-        void encode(@Nonnull Encoder encoder);
+    interface List
+    {
+        @Nonnull Encoder item();
+
+        void end();
+    }
+
+    interface Map
+    {
+        @Nonnull Encoder key();
+
+        @Nonnull Encoder val();
+
+        void end();
     }
 }

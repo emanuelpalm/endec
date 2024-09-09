@@ -68,27 +68,26 @@ public class EncodableProcessor extends AbstractProcessor
                         package %s;
                         
                         import tech.endec.type.Encoder;
-                        import java.io.IOException;
                         
                         public final class %sEncoder {
                             private %sEncoder() {}
                         
                             public static void encode(%s input, Encoder encoder)
                             {
-                                encoder.encodeMap(%d, map -> {
+                                var map = encoder.encodeMap(%d);
                         """.formatted(packageElement, simpleName, simpleName, simpleName, components.size())
                         .getBytes(StandardCharsets.UTF_8));
 
                 for (var component : components) {
                     var name = component.getSimpleName();
                     output.write("""
-                                        map.encodeString("%s");
-                                        map.encodeString(input.%s());
+                                    map.key().encodeString("%s");
+                                    map.val().encodeString(input.%s());
                             """.formatted(name, name).getBytes(StandardCharsets.UTF_8));
                 }
 
                 output.write("""
-                                });
+                                map.end();
                             }
                         }
                         """.getBytes(StandardCharsets.UTF_8));
