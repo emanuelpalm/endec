@@ -13,43 +13,42 @@ class JsonEncoderList implements Encoder.List
     private boolean isEnded = false;
     private boolean isNotEmpty = false;
 
-    private final int expectedSize;
-    private int remainingItems;
+    private final int expectedItemCount;
+    private int currentItemCount = 0;
 
-    JsonEncoderList(@Nonnull EncoderOutput output, int expectedSize)
+    JsonEncoderList(@Nonnull EncoderOutput output, int expectedItemCount)
     {
-        if (expectedSize < 0) {
-            throw new EncoderArgumentException("expectedSize < 0");
+        if (expectedItemCount < 0) {
+            throw new EncoderArgumentException("expectedItemCount < 0");
         }
         this.output = output;
-        this.expectedSize = expectedSize;
-        remainingItems = expectedSize;
+        this.expectedItemCount = expectedItemCount;
     }
 
-    @Nonnull @Override public Encoder item()
+    @Nonnull @Override public Encoder next()
     {
-        return new JsonEncoder() {
-            private boolean isUsed = false;
+        if (currentItemCount >= expectedItemCount) {
+            throw new EncoderStateException("all of the " + expectedItemCount +
+                    " declared items have already been encoded");
+        }
+        currentItemCount += 1;
 
-            @Nonnull @Override protected EncoderOutput getOutput() { return output; }
+        return new JsonEncoder(output)
+        {
+            private final int id = currentItemCount;
 
             @Override protected void beforeEncode()
             {
-                if (isUsed) {
-                    throw new EncoderStateException("item already encoded");
+                super.beforeEncode();
+
+                if (id != currentItemCount) {
+                    throw new EncoderStateException("item out of sequence");
                 }
-                isUsed = true;
 
                 if (isEnded) {
                     throw new EncoderStateException("attempting to add value " +
                             "to ended list encoder");
                 }
-
-                if (remainingItems <= 0) {
-                    throw new EncoderStateException(expectedSize + " items " +
-                            "already added to encoded list");
-                }
-                remainingItems -= 1;
 
                 if (isNotEmpty) {
                     output.write((byte) ',');
@@ -62,12 +61,12 @@ class JsonEncoderList implements Encoder.List
 
     @Override public void end()
     {
+        if (currentItemCount < expectedItemCount) {
+            throw new EncoderStateException(expectedItemCount + " items were " +
+                    "declared, but only " + currentItemCount + " were encoded");
+        }
         if (isEnded) {
             throw new EncoderStateException("list encoder already ended");
-        }
-        if (remainingItems > 0) {
-            throw new EncoderStateException("expected " + remainingItems + " " +
-                    "additional items to be added to encoded list");
         }
         isEnded = true;
 

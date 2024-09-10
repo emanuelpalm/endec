@@ -17,7 +17,7 @@ class MessageTest
         var m = new Message("Hello, World!", "Endec", "2024-09-04T22:54:42Z");
         var b = ByteBuffer.allocate(2048);
         var o = EncoderOutput.wrap(b);
-        var e = JsonEncoder.from(o);
+        var e = new JsonEncoder(o);
         MessageEncoder.encode(m, e);
 
         var expected = "{\"text\":\"Hello, World!\",\"sender\":\"Endec\",\"timestamp\":\"2024-09-04T22:54:42Z\"}";

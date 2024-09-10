@@ -33,16 +33,16 @@ public interface Encoder
 
     interface List
     {
-        @Nonnull Encoder item();
+        @Nonnull Encoder next();
 
         void end();
     }
 
     interface Map
     {
-        @Nonnull Encoder key();
+        @Nonnull Encoder nextKey();
 
-        @Nonnull Encoder val();
+        @Nonnull Encoder nextValue();
 
         void end();
     }

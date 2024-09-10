@@ -7,14 +7,19 @@ import java.nio.ByteBuffer;
 
 public interface EncoderOutput
 {
-    static @Nonnull EncoderOutputStream wrap(@Nonnull OutputStream stream)
-    {
-        return new EncoderOutputStream(stream);
-    }
-
     static @Nonnull EncoderOutputBuffer wrap(@Nonnull ByteBuffer buffer)
     {
         return new EncoderOutputBuffer(buffer);
+    }
+
+    static @Nonnull EncoderOutputByteArray wrap(@Nonnull byte[] byteArray)
+    {
+        return new EncoderOutputByteArray(byteArray);
+    }
+
+    static @Nonnull EncoderOutputStream wrap(@Nonnull OutputStream stream)
+    {
+        return new EncoderOutputStream(stream);
     }
 
     void write(byte b);

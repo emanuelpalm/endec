@@ -50,8 +50,5 @@ public class EncoderOutputStream implements Closeable, EncoderOutput
         }
     }
 
-    public @Nonnull OutputStream unwrap()
-    {
-        return inner;
-    }
+    public @Nonnull OutputStream unwrap() { return inner; }
 }

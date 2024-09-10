@@ -17,8 +17,5 @@ public class EncoderOutputBuffer implements EncoderOutput
         inner.put(source, offset, length);
     }
 
-    public @Nonnull ByteBuffer unwrap()
-    {
-        return inner;
-    }
+    public @Nonnull ByteBuffer unwrap() { return inner; }
 }

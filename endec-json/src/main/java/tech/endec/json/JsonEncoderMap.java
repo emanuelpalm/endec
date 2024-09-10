@@ -15,28 +15,35 @@ class JsonEncoderMap implements Encoder.Map
     private boolean isEnded = false;
     private boolean isNotEmpty = false;
 
-    private final int expectedSize;
-    private int remainingPairs;
+    private final int expectedPairCount;
+    private int currentPairCount = 0;
 
-    JsonEncoderMap(@Nonnull EncoderOutput output, int expectedSize)
+    JsonEncoderMap(@Nonnull EncoderOutput output, int expectedPairCount)
     {
-        if (expectedSize < 0) {
-            throw new EncoderArgumentException("expectedSize < 0");
+        if (expectedPairCount < 0) {
+            throw new EncoderArgumentException("expectedPairCount < 0");
         }
         this.output = output;
-        this.expectedSize = expectedSize;
-        remainingPairs = expectedSize;
+        this.expectedPairCount = expectedPairCount;
     }
 
-    @Override public @Nonnull Encoder key()
+    @Override public @Nonnull Encoder nextKey()
     {
-        return new JsonEncoder()
-        {
-            private boolean isUsed = false;
+        if (isAtValue) {
+            throw new EncoderStateException("expected value");
+        }
+        isAtValue = true;
 
-            @Override protected @Nonnull EncoderOutput getOutput() {
-                return output;
-            }
+        if (currentPairCount >= expectedPairCount) {
+            throw new EncoderStateException("the expected " +
+                    expectedPairCount + " pairs have already been added to " +
+                    "the encoded map");
+        }
+        currentPairCount += 1;
+
+        return new JsonEncoder(output)
+        {
+            private final int id = currentPairCount;
 
             @Override public void encodeNull()
             {
@@ -76,22 +83,16 @@ class JsonEncoderMap implements Encoder.Map
 
             @Override protected void beforeEncode()
             {
-                if (isUsed || isAtValue) {
-                    throw new EncoderStateException("key already encoded");
+                super.beforeEncode();
+
+                if (id != currentPairCount) {
+                    throw new EncoderStateException("key out of sequence");
                 }
-                isUsed = true;
-                isAtValue = true;
 
                 if (isEnded) {
-                    throw new EncoderStateException("attempting to add key " +
-                            "to ended map encoder");
+                    throw new EncoderStateException("adding key to ended " +
+                            "map encoder");
                 }
-
-                if (remainingPairs <= 0) {
-                    throw new EncoderStateException(expectedSize + " pairs " +
-                            "already added to encoded map");
-                }
-                remainingPairs -= 1;
 
                 if (isNotEmpty) {
                     output.write((byte) ',');
@@ -102,27 +103,28 @@ class JsonEncoderMap implements Encoder.Map
         };
     }
 
-    @Override public @Nonnull Encoder val()
+    @Override public @Nonnull Encoder nextValue()
     {
-        return new JsonEncoder()
-        {
-            private boolean isUsed = false;
+        if (!isAtValue) {
+            throw new EncoderStateException("expected key");
+        }
+        isAtValue = false;
 
-            @Override protected @Nonnull EncoderOutput getOutput() {
-                return output;
-            }
+        return new JsonEncoder(output)
+        {
+            private final int id = currentPairCount;
 
             @Override protected void beforeEncode()
             {
-                if (isUsed || !isAtValue) {
-                    throw new EncoderStateException("value already encoded");
+                super.beforeEncode();
+
+                if (id != currentPairCount) {
+                    throw new EncoderStateException("value out of sequence");
                 }
-                isUsed = true;
-                isAtValue = false;
 
                 if (isEnded) {
-                    throw new EncoderStateException("attempting to add value " +
-                            "to ended map encoder");
+                    throw new EncoderStateException("adding value to ended " +
+                            "map encoder");
                 }
 
                 output.write((byte) ':');
@@ -132,16 +134,15 @@ class JsonEncoderMap implements Encoder.Map
 
     @Override public void end()
     {
-        if (isEnded) {
-            throw new EncoderStateException("list encoder already ended");
+        if (currentPairCount < expectedPairCount) {
+            throw new EncoderStateException(expectedPairCount + " pairs were " +
+                    "declared, but only " + currentPairCount + " were encoded");
         }
         if (isAtValue) {
-            throw new EncoderStateException("attempting to end map encoder " +
-                    "with dangling key");
+            throw new EncoderStateException("map encoder has dangling key");
         }
-        if (remainingPairs > 0) {
-            throw new EncoderStateException("expected " + remainingPairs + " " +
-                    "additional pairs to be added to encoded map");
+        if (isEnded) {
+            throw new EncoderStateException("map encoder already ended");
         }
         isEnded = true;
 
