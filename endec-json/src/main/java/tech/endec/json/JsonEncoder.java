@@ -66,8 +66,7 @@ public class JsonEncoder implements Encoder
     @Override public void encodeChar(char value)
     {
         beforeEncode();
-        throw new NotEncodableException(value, "plain characters cannot be " +
-                "represented as JSON");
+        StringToJson.format(String.valueOf(value), output);
     }
 
     @Override public void encodeString(@Nonnull String value)
@@ -78,9 +77,11 @@ public class JsonEncoder implements Encoder
 
     @Override public void encodeByteArray(@Nonnull byte[] value)
     {
-        beforeEncode();
-        throw new NotEncodableException(value, "plain byte arrays cannot be " +
-                "represented as JSON");
+        var list = encodeList(null, value.length);
+        for (var b : value) {
+            list.next().encodeByte(b);
+        }
+        list.end();
     }
 
     @Override public @Nonnull Encoder.List encodeList(@Nullable Object prototype, int size)
