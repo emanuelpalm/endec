@@ -28,8 +28,8 @@ class JsonEncoderList implements Encoder.List
     @Nonnull @Override public Encoder next()
     {
         if (currentItemCount >= expectedItemCount) {
-            throw new EncoderStateException("all of the " + expectedItemCount +
-                    " declared items have already been encoded");
+            throw new EncoderStateException("the " + expectedItemCount + " " +
+                    "declared list items have already been encoded");
         }
         currentItemCount += 1;
 

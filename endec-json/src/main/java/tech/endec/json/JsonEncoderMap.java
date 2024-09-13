@@ -36,9 +36,8 @@ class JsonEncoderMap implements Encoder.Map
         isAtValue = true;
 
         if (currentPairCount >= expectedPairCount) {
-            throw new EncoderStateException("the expected " +
-                    expectedPairCount + " pairs have already been added to " +
-                    "the encoded map");
+            throw new EncoderStateException("the " + expectedPairCount + " " +
+                    "declared map pairs have already been encoded");
         }
         currentPairCount += 1;
 
