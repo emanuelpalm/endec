@@ -30,7 +30,7 @@ public class JsonEncoder implements Encoder
     @Override public void encodeByte(byte value)
     {
         beforeEncode();
-        LongToJson.format(value, output);
+        ByteToJson.format(value, output);
     }
 
     @Override public void encodeShort(short value)
