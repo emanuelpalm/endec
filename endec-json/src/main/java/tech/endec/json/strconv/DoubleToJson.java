@@ -6,7 +6,7 @@ import tech.endec.type.ex.NotEncodableException;
 
 import java.nio.charset.StandardCharsets;
 
-public class DoubleToJson
+public final class DoubleToJson
 {
     private DoubleToJson() {}
 
