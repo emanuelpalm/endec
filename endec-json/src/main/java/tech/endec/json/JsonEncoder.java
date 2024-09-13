@@ -6,7 +6,6 @@ import tech.endec.json.strconv.*;
 import tech.endec.type.Encoder;
 import tech.endec.type.EncoderOutput;
 import tech.endec.type.ex.EncoderStateException;
-import tech.endec.type.ex.NotEncodableException;
 
 public class JsonEncoder implements Encoder
 {
@@ -28,10 +27,34 @@ public class JsonEncoder implements Encoder
         BooleanToJson.format(value, output);
     }
 
+    @Override public void encodeByte(byte value)
+    {
+        beforeEncode();
+        LongToJson.format(value, output);
+    }
+
+    @Override public void encodeShort(short value)
+    {
+        beforeEncode();
+        LongToJson.format(value, output);
+    }
+
+    @Override public void encodeInt(int value)
+    {
+        beforeEncode();
+        LongToJson.format(value, output);
+    }
+
     @Override public void encodeLong(long value)
     {
         beforeEncode();
         LongToJson.format(value, output);
+    }
+
+    @Override public void encodeFloat(float value)
+    {
+        beforeEncode();
+        DoubleToJson.format(value, output);
     }
 
     @Override public void encodeDouble(double value)

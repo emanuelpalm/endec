@@ -10,15 +10,15 @@ public interface Encoder
 
     void encodeBoolean(boolean value);
 
-    default void encodeByte(byte value) { encodeLong(value); }
+    void encodeByte(byte value);
 
-    default void encodeShort(short value) { encodeLong(value); }
+    void encodeShort(short value);
 
-    default void encodeInt(int value) { encodeLong(value); }
+    void encodeInt(int value);
 
     void encodeLong(long value);
 
-    default void encodeFloat(float value) { encodeDouble(value); }
+    void encodeFloat(float value);
 
     void encodeDouble(double value);
 
