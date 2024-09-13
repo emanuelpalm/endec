@@ -74,7 +74,7 @@ public class EncodableProcessor extends AbstractProcessor
                         
                             public static void encode(%s input, Encoder encoder)
                             {
-                                var map = encoder.encodeMap(%d);
+                                var map = encoder.encodeMap(input, %d);
 
                         """.formatted(packageElement, simpleName, simpleName, simpleName, components.size())
                         .getBytes(StandardCharsets.UTF_8));

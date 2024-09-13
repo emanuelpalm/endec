@@ -1,6 +1,7 @@
 package tech.endec.json;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import tech.endec.json.strconv.*;
 import tech.endec.type.Encoder;
 import tech.endec.type.EncoderOutput;
@@ -59,21 +60,22 @@ public class JsonEncoder implements Encoder
                 "represented as JSON");
     }
 
-    @Override public @Nonnull Encoder.List encodeList(int size)
+    @Override public @Nonnull Encoder.List encodeList(@Nullable Object prototype, int size)
     {
         beforeEncode();
         output.write((byte) '[');
         return new JsonEncoderList(output, size);
     }
 
-    @Override public @Nonnull Encoder.Map encodeMap(int size)
+    @Override public @Nonnull Encoder.Map encodeMap(@Nullable Object prototype, int size)
     {
         beforeEncode();
         output.write((byte) '{');
         return new JsonEncoderMap(output, size);
     }
 
-    protected void beforeEncode() {
+    protected void beforeEncode()
+    {
         if (isUsed) {
             throw new EncoderStateException("encoder already used");
         }

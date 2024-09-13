@@ -1,6 +1,7 @@
 package tech.endec.json;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import tech.endec.type.Encoder;
 import tech.endec.type.EncoderOutput;
 import tech.endec.type.ex.EncoderArgumentException;
@@ -69,16 +70,16 @@ class JsonEncoderMap implements Encoder.Map
                         "used as a name in a JSON object");
             }
 
-            @Override @Nonnull public List encodeList(int size)
+            @Override @Nonnull public List encodeList(@Nullable Object prototype, int size)
             {
-                throw new NotEncodableException(null, "a list cannot be used " +
-                        "as a name in a JSON object");
+                throw new NotEncodableException(prototype, "a list cannot be " +
+                        "used as a name in a JSON object");
             }
 
-            @Override @Nonnull public Map encodeMap(int size)
+            @Override @Nonnull public Map encodeMap(@Nullable Object prototype, int size)
             {
-                throw new NotEncodableException(null, "a map cannot be used " +
-                        "as a name in a JSON object");
+                throw new NotEncodableException(prototype, "a map cannot be " +
+                        "used as a name in a JSON object");
             }
 
             @Override protected void beforeEncode()

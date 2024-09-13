@@ -1,6 +1,7 @@
 package tech.endec.type;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 @SuppressWarnings("unused")
 public interface Encoder
@@ -27,9 +28,9 @@ public interface Encoder
 
     void encodeByteArray(@Nonnull byte[] value);
 
-    @Nonnull List encodeList(int size);
+    @Nonnull List encodeList(@Nullable Object prototype, int size);
 
-    @Nonnull Map encodeMap(int size);
+    @Nonnull Map encodeMap(@Nullable Object prototype, int size);
 
     interface List
     {
