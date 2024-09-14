@@ -6,6 +6,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,20 +49,21 @@ public class EncodableProcessor extends AbstractProcessor
     {
         var identityHash = System.identityHashCode(element);
         return identityHashesOfAlreadyProcessedElements.add(identityHash);
-
     }
 
     private void processElement(@Nonnull TypeElement element)
     {
-
-        for (var encoderGenerator : encoderGenerators) {
-            if (encoderGenerator.tryGenerate(element, context)) {
-                return;
+        try {
+            for (var encoderGenerator : encoderGenerators) {
+                if (encoderGenerator.tryGenerate(element, context)) {
+                    return;
+                }
             }
+            context.printError("no generator is available for generating an " +
+                    "encoder for this type", element);
+        } catch (IOException e) {
+            context.printError("failed to generate encoder for this element ",
+                    element, e);
         }
-
-        context.messager()
-                .printWarning("no encoder generator exists for this element",
-                        element);
     }
 }
