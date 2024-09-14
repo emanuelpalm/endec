@@ -13,7 +13,6 @@ import javax.tools.JavaFileObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.util.Objects;
 
 public record ProcessorContext(
@@ -40,10 +39,9 @@ public record ProcessorContext(
     public void printError(@Nonnull String message, @Nullable Element element, @Nonnull Throwable throwable)
     {
         var buffer = new ByteArrayOutputStream(8192);
-        var charset = Charset.defaultCharset();
-        var output = new PrintWriter(buffer, false, charset);
+        var output = new PrintWriter(buffer);
         output.printf("%s%n", message);
         throwable.printStackTrace(output);
-        messager.printError(buffer.toString(charset), element);
+        messager.printError(buffer.toString(), element);
     }
 }

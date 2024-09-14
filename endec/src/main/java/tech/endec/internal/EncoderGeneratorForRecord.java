@@ -5,7 +5,7 @@ import jakarta.annotation.Nonnull;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.PrintWriter;
 
 public class EncoderGeneratorForRecord implements EncoderGenerator
 {
@@ -20,36 +20,38 @@ public class EncoderGeneratorForRecord implements EncoderGenerator
         var simpleName = element.getSimpleName();
         var sourceFile = context.createSourceFile(element.getQualifiedName() + "Encoder", element);
         var components = element.getRecordComponents();
-        try (var output = sourceFile.openOutputStream()) {
-            output.write("""
-                    package %s;
+        try (var writer = new PrintWriter(sourceFile.openOutputStream())) {
+            writer.format("""
+                    package %1$s;
                     
                     import tech.endec.type.Encoder;
                     
-                    public final class %sEncoder {
-                        private %sEncoder() {}
+                    import java.util.Objects;
                     
-                        public static void encode(%s input, Encoder encoder)
+                    public final class %2$sEncoder {
+                        private %2$sEncoder() {}
+                    
+                        public static void encode(%2$s input, Encoder encoder)
                         {
-                            var map = encoder.encodeMap(input, %d);
+                            Objects.requireNonNull(input);
+                            Objects.requireNonNull(encoder);
                     
-                    """.formatted(packageElement, simpleName, simpleName, simpleName, components.size())
-                    .getBytes(StandardCharsets.UTF_8));
-
+                            var map = encoder.encodeMap(input, %3$d);
+                    
+                    """, packageElement, simpleName, components.size());
             for (var component : components) {
                 var name = component.getSimpleName();
-                output.write("""
-                                map.nextKey().encodeString("%s");
-                                map.nextValue().encodeString(input.%s());
+                writer.format("""
+                                map.nextKey().encodeString("%1$s");
+                                map.nextValue().encodeString(input.%1$s());
                         
-                        """.formatted(name, name).getBytes(StandardCharsets.UTF_8));
+                        """, name);
             }
-
-            output.write("""
+            writer.print("""
                             map.end();
                         }
                     }
-                    """.getBytes(StandardCharsets.UTF_8));
+                    """);
         }
 
         return true;
