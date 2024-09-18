@@ -6,7 +6,6 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,11 +58,15 @@ public class EncodableProcessor extends AbstractProcessor
                     return;
                 }
             }
-            context.printError("no generator is available for generating an " +
-                    "encoder for this type", element);
-        } catch (IOException e) {
-            context.printError("failed to generate encoder for this element ",
-                    element, e);
+            context.createReport(ProcessorIssue.ENCODER_GENERATOR_UNAVAILABLE_FOR_TYPE)
+                    .element(element)
+                    .submit();
+        }
+        catch (Exception e) {
+            context.createReport(ProcessorIssue.ENCODER_GENERATOR_EXCEPTION_CAUGHT)
+                    .element(element)
+                    .throwable(e)
+                    .submit();
         }
     }
 }
