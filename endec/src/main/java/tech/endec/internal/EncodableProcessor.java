@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @SupportedAnnotationTypes("tech.endec.Encodable")
-@SupportedSourceVersion(SourceVersion.RELEASE_22)
+@SupportedSourceVersion(SourceVersion.RELEASE_23)
 public class EncodableProcessor extends AbstractProcessor
 {
     private final @Nonnull List<EncoderGenerator> encoderGenerators = List.of(

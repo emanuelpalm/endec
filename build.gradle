@@ -17,8 +17,8 @@ subprojects {
 
     tasks.withType(JavaCompile).tap {
         configureEach {
-            sourceCompatibility = "22"
-            targetCompatibility = "22"
+            sourceCompatibility = "23"
+            targetCompatibility = "23"
         }
     }
 }
