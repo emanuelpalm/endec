@@ -14,13 +14,14 @@ class MessageTest
     @Test
     void encode_producesExpectedOutput()
     {
-        var m = new Message("Hello, World!", "Endec", "2024-09-04T22:54:42Z");
+        var u = new User("Endec");
+        var m = new Message(u, "Hello, World!", "2024-09-04T22:54:42Z");
         var b = ByteBuffer.allocate(2048);
         var o = EncoderOutput.wrap(b);
         var e = new JsonEncoder(o);
         MessageEncoder.encode(m, e);
 
-        var expected = "{\"text\":\"Hello, World!\",\"sender\":\"Endec\",\"timestamp\":\"2024-09-04T22:54:42Z\"}";
+        var expected = "{\"sender\":{\"name\":\"Endec\"},\"text\":\"Hello, World!\",\"timestamp\":\"2024-09-04T22:54:42Z\"}";
         var actual = new String(b.array(), 0, b.position(), StandardCharsets.UTF_8);
         assertEquals(expected, actual);
     }

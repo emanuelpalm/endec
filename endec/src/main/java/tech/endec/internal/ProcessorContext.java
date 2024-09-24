@@ -22,13 +22,13 @@ public record ProcessorContext(
         return new ProcessorReport(messager, issue);
     }
 
-    public JavaFileObject createSourceFile(@Nonnull CharSequence name, @Nonnull Element... originatingElements)
+    public @Nonnull JavaFileObject createSourceFile(@Nonnull CharSequence name, @Nonnull Element... originatingElements)
             throws IOException
     {
         return filer.createSourceFile(name, originatingElements);
     }
 
-    public @Nonnull PackageElement getPackageOf(@Nonnull TypeElement element)
+    public @Nonnull PackageElement getPackageOf(@Nonnull Element element)
     {
         return Objects.requireNonNull(elementUtils.getPackageOf(element));
     }

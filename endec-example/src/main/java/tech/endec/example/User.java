@@ -5,4 +5,6 @@ import tech.endec.Encodable;
 
 @Encodable
 @Decodable
-public record Message(User sender, String text, String timestamp) {}
+public record User(String name)
+{
+}
