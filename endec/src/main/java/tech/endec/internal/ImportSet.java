@@ -38,10 +38,11 @@ public class ImportSet
 
     private boolean isMemberOf(@Nonnull String qualifiedName, @Nonnull String packageName)
     {
-        return qualifiedName.startsWith(packageName)
-                && qualifiedName.length() > packageName.length() + 1
+        var qualifiedNameMinLength = packageName.length() + 1;
+        return qualifiedName.length() > qualifiedNameMinLength
                 && qualifiedName.charAt(packageName.length()) == '.'
-                && qualifiedName.indexOf('.', packageName.length() + 1) == -1;
+                && qualifiedName.startsWith(packageName)
+                && qualifiedName.indexOf('.', qualifiedNameMinLength) == -1;
     }
 
     public void add(@Nullable TypeMirror type)
