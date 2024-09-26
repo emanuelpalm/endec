@@ -20,8 +20,7 @@ public class EncoderGeneratorForRecord implements EncoderGenerator
         var simpleName = element.getSimpleName();
         var components = element.getRecordComponents();
 
-        var builder = new StringBuilder();
-        var writer = new CodeWriter(builder);
+        var writer = new CodeWriter();
 
         var imports = ImportSet.createForClassInPackage(packageElement.toString());
         imports.add("java.util.Objects");
@@ -84,7 +83,7 @@ public class EncoderGeneratorForRecord implements EncoderGenerator
 
         var sourceFile = context.createSourceFile(element.getQualifiedName() + "Encoder", element);
         try (var output = sourceFile.openOutputStream()) {
-            output.write(builder.toString().getBytes());
+            output.write(writer.toString().getBytes());
         }
 
         return true;

@@ -4,16 +4,11 @@ import jakarta.annotation.Nonnull;
 
 public class CodeWriter
 {
-    private final @Nonnull StringBuilder builder;
+    private final @Nonnull StringBuilder builder = new StringBuilder(512);
 
     private boolean isUsed = false;
-    private int lineCount = 0;
-    private int scopeDepth = 0;
-
-    public CodeWriter(@Nonnull StringBuilder builder)
-    {
-        this.builder = builder;
-    }
+    private int currentDepth = 0;
+    private int currentLineNumber = 0;
 
     public @Nonnull Scope scope()
     {
@@ -22,6 +17,11 @@ public class CodeWriter
         }
         isUsed = true;
         return new Scope(1);
+    }
+
+    @Override public String toString()
+    {
+        return builder.toString();
     }
 
     public class Line
@@ -33,12 +33,12 @@ public class CodeWriter
 
         protected Line(int depth)
         {
-            if (lineCount++ > 0) {
+            if (currentLineNumber++ > 0) {
                 builder.append(System.lineSeparator());
             }
 
             this.depth = depth;
-            this.lineNumber = lineCount;
+            this.lineNumber = currentLineNumber;
         }
 
         public @Nonnull Line write(char ch)
@@ -75,7 +75,7 @@ public class CodeWriter
 
         private void throwIfOutOfSequence()
         {
-            if (lineNumber != lineCount) {
+            if (lineNumber != currentLineNumber) {
                 throw new IllegalStateException("Line used out of sequence");
             }
         }
@@ -85,9 +85,11 @@ public class CodeWriter
     {
         private final int depth;
 
+        private boolean isEnded = false;
+
         protected Scope(int depth)
         {
-            scopeDepth += 1;
+            currentDepth += 1;
 
             this.depth = depth;
         }
@@ -107,12 +109,16 @@ public class CodeWriter
         public void end()
         {
             throwIfOutOfSequence();
-            scopeDepth -= 1;
+            currentDepth -= 1;
+            isEnded = true;
         }
 
         private void throwIfOutOfSequence()
         {
-            if (scopeDepth != depth) {
+            if (isEnded) {
+                throw new IllegalStateException("Scope already ended");
+            }
+            if (depth != currentDepth) {
                 throw new IllegalStateException("Scope used out of sequence");
             }
         }
