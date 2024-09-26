@@ -23,7 +23,6 @@ public class EncoderGeneratorForRecord implements EncoderGenerator
         var writer = new CodeWriter();
 
         var imports = ImportSet.createForClassInPackage(packageElement.toString());
-        imports.add("java.util.Objects");
         imports.add("tech.endec.type.Encoder");
         for (var component : components) {
             imports.add(component.asType());
@@ -44,14 +43,19 @@ public class EncoderGeneratorForRecord implements EncoderGenerator
         type.line().write('{');
 
         var method = type.scope();
-        method.line().write("Objects.requireNonNull(e);");
-        method.line();
+        method.line().write("if (e == null) {");
+
+        var ifEIsNull = method.scope();
+        ifEIsNull.line().write("throw new NullPointerException();");
+        ifEIsNull.end();
+
+        method.line().write('}');
         method.line().write("if (v == null) {");
 
-        var condition = method.scope();
-        condition.line().write("e.encodeNull();");
-        condition.line().write("return;");
-        condition.end();
+        var ifVIsNull = method.scope();
+        ifVIsNull.line().write("e.encodeNull();");
+        ifVIsNull.line().write("return;");
+        ifVIsNull.end();
 
         method.line().write('}');
         method.line();
