@@ -5,6 +5,6 @@ import tech.endec.Encodable;
 
 @Encodable
 @Decodable
-public record User(String name)
+public record User(String name, int id)
 {
 }

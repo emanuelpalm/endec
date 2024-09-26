@@ -4,7 +4,6 @@ import jakarta.annotation.Nonnull;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
 import java.io.IOException;
 
 public class EncoderGeneratorForRecord implements EncoderGenerator
@@ -25,7 +24,7 @@ public class EncoderGeneratorForRecord implements EncoderGenerator
         var imports = ImportSet.createForClassInPackage(packageElement.toString());
         imports.add("tech.endec.type.Encoder");
         for (var component : components) {
-            imports.add(component.asType());
+            imports.add(component.getAccessor().getReturnType());
         }
 
         var root = writer.scope();
@@ -65,14 +64,7 @@ public class EncoderGeneratorForRecord implements EncoderGenerator
         for (var component : components) {
             var name = component.getSimpleName();
             method.line().write("m.nextKey().encodeString(\"").write(name).write("\");");
-
-            var componentType = component.asType();
-            if (componentType instanceof DeclaredType declaredType && !componentType.toString().equals("java.lang.String")) {
-                method.line().write(declaredType.asElement().getSimpleName()).write("Encoder.encode(v.").write(name).write("(), m.nextValue());");
-            }
-            else {
-                method.line().write("m.nextValue().encodeString(v.").write(name).write("());");
-            }
+            EncoderMember.write("m.nextValue()", "v", component, method);
             method.line();
         }
 

@@ -51,7 +51,7 @@ public class ImportSet
             case ArrayType t -> add(t.getComponentType());
             case DeclaredType t -> {
                 var enclosingType = t.getEnclosingType();
-                if (enclosingType == null) {
+                if (enclosingType == null || enclosingType.getKind() == TypeKind.NONE) {
                     if (t.asElement() instanceof QualifiedNameable nameable) {
                         add(nameable.getQualifiedName());
                     }
