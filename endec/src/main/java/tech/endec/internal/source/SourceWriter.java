@@ -1,8 +1,8 @@
-package tech.endec.internal;
+package tech.endec.internal.source;
 
 import jakarta.annotation.Nonnull;
 
-public class CodeWriter
+public class SourceWriter
 {
     private final @Nonnull StringBuilder builder = new StringBuilder(512);
 
@@ -19,9 +19,9 @@ public class CodeWriter
         return new Scope(1);
     }
 
-    @Override public String toString()
+    public @Nonnull SourceFile toFile(@Nonnull String name)
     {
-        return builder.toString();
+        return new SourceFile(name, builder.toString());
     }
 
     public class Line

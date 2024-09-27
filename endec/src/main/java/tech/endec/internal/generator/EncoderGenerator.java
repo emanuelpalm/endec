@@ -1,25 +1,34 @@
-package tech.endec.internal;
+package tech.endec.internal.generator;
 
 import jakarta.annotation.Nonnull;
+import tech.endec.internal.audit.Audit;
+import tech.endec.internal.source.SourceFile;
+import tech.endec.internal.source.SourceWriter;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import java.io.IOException;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
-public class EncoderGeneratorForRecord implements EncoderGenerator
+public record EncoderGenerator(
+        @Nonnull Audit audit,
+        @Nonnull Elements elementUtils,
+        @Nonnull Types typeUtils)
 {
-    @Override public boolean tryGenerate(@Nonnull TypeElement element, @Nonnull ProcessorContext context)
-            throws IOException
+    public @Nonnull SourceFile generate(@Nonnull TypeElement element)
+    {
+        return generate(element, new SourceWriter());
+    }
+
+    private @Nonnull SourceFile generate(@Nonnull TypeElement element, @Nonnull SourceWriter writer)
     {
         if (element.getKind() != ElementKind.RECORD) {
-            return false;
+            throw new UnsupportedOperationException("TODO: Only records are supported");
         }
 
-        var packageElement = context.getPackageOf(element);
+        var packageElement = elementUtils.getPackageOf(element);
         var simpleName = element.getSimpleName();
         var components = element.getRecordComponents();
-
-        var writer = new CodeWriter();
 
         var imports = ImportSet.createForClassInPackage(packageElement.toString());
         imports.add("tech.endec.type.Encoder");
@@ -77,11 +86,6 @@ public class EncoderGeneratorForRecord implements EncoderGenerator
         root.line().write('}');
         root.end();
 
-        var sourceFile = context.createSourceFile(element.getQualifiedName() + "Encoder", element);
-        try (var output = sourceFile.openOutputStream()) {
-            output.write(writer.toString().getBytes());
-        }
-
-        return true;
+        return writer.toFile(element.getQualifiedName() + "Encoder");
     }
 }

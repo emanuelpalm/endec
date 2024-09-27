@@ -1,34 +1,37 @@
 package tech.endec.internal;
 
 import jakarta.annotation.Nonnull;
+import tech.endec.internal.audit.Audit;
+import tech.endec.internal.audit.AuditCode;
+import tech.endec.internal.generator.EncoderGenerator;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @SupportedAnnotationTypes("tech.endec.Encodable")
 @SupportedSourceVersion(SourceVersion.RELEASE_23)
 public class EncodableProcessor extends AbstractProcessor
 {
-    private final @Nonnull List<EncoderGenerator> encoderGenerators = List.of(
-            new EncoderGeneratorForRecord());
-
     private final @Nonnull HashSet<Integer> identityHashesOfAlreadyProcessedElements = new HashSet<>();
 
-    private ProcessorContext context;
+    private Audit audit;
+    private Filer filer;
+    private EncoderGenerator generator;
 
     @Override
     public synchronized void init(@Nonnull ProcessingEnvironment processingEnv)
     {
         super.init(processingEnv);
-        context = new ProcessorContext(
-                processingEnv.getFiler(),
-                processingEnv.getMessager(),
-                processingEnv.getElementUtils());
+        audit = new Audit(processingEnv.getMessager());
+        filer = processingEnv.getFiler();
+        generator = new EncoderGenerator(
+                audit,
+                processingEnv.getElementUtils(),
+                processingEnv.getTypeUtils());
     }
 
     @Override
@@ -52,21 +55,17 @@ public class EncodableProcessor extends AbstractProcessor
 
     private void processElement(@Nonnull TypeElement element)
     {
+        var file = generator.generate(element);
         try {
-            for (var encoderGenerator : encoderGenerators) {
-                if (encoderGenerator.tryGenerate(element, context)) {
-                    return;
-                }
+            var fileObject = filer.createSourceFile(file.name(), element);
+            try (var output = fileObject.openOutputStream()) {
+                output.write(file.body().getBytes());
             }
-            context.createReport(ProcessorIssue.ENCODER_GENERATOR_UNAVAILABLE_FOR_TYPE)
-                    .element(element)
-                    .submit();
         }
         catch (Exception e) {
-            context.createReport(ProcessorIssue.ENCODER_GENERATOR_EXCEPTION_CAUGHT)
+            audit.report(AuditCode.ENCODER_GENERATOR_EXCEPTION_CAUGHT.toIssue()
                     .element(element)
-                    .throwable(e)
-                    .submit();
+                    .throwable(e));
         }
     }
 }

@@ -1,6 +1,7 @@
-package tech.endec.internal;
+package tech.endec.internal.generator;
 
 import jakarta.annotation.Nonnull;
+import tech.endec.internal.source.SourceWriter;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -19,7 +20,7 @@ public final class EncoderMember
             @Nonnull String encoderExpression,
             @Nonnull String memberExpression,
             @Nonnull Element element,
-            @Nonnull CodeWriter.Scope scope)
+            @Nonnull SourceWriter.Scope scope)
     {
         var type = element.asType();
         switch (type) {
@@ -36,7 +37,7 @@ public final class EncoderMember
             @Nonnull String memberExpression,
             @Nonnull Element element,
             @Nonnull ArrayType type,
-            @Nonnull CodeWriter.Scope scope)
+            @Nonnull SourceWriter.Scope scope)
     {
         throw new UnsupportedOperationException("TODO");
     }
@@ -46,7 +47,7 @@ public final class EncoderMember
             @Nonnull String memberExpression,
             @Nonnull Element element,
             @Nonnull DeclaredType type,
-            @Nonnull CodeWriter.Scope scope)
+            @Nonnull SourceWriter.Scope scope)
     {
         var line = scope.line();
         if (type.toString().equals("java.lang.String")) {
@@ -66,7 +67,7 @@ public final class EncoderMember
             @Nonnull String memberExpression,
             @Nonnull Element element,
             @Nonnull PrimitiveType type,
-            @Nonnull CodeWriter.Scope scope)
+            @Nonnull SourceWriter.Scope scope)
     {
         var line = scope.line();
 
@@ -90,7 +91,7 @@ public final class EncoderMember
     private static void write(
             @Nonnull String memberExpression,
             @Nonnull Element element,
-            @Nonnull CodeWriter.Line line)
+            @Nonnull SourceWriter.Line line)
     {
         switch (element) {
             case ExecutableElement e -> write(memberExpression, e, line);
@@ -103,7 +104,7 @@ public final class EncoderMember
     private static void write(
             @Nonnull String memberExpression,
             @Nonnull ExecutableElement element,
-            @Nonnull CodeWriter.Line line)
+            @Nonnull SourceWriter.Line line)
     {
         var receiverType = element.getReceiverType();
         if (receiverType != null && receiverType.getKind() != TypeKind.NONE) {
@@ -121,7 +122,7 @@ public final class EncoderMember
     private static void write(
             @Nonnull String memberExpression,
             @Nonnull VariableElement element,
-            @Nonnull CodeWriter.Line line)
+            @Nonnull SourceWriter.Line line)
     {
         if (element.isUnnamed()) {
             throw new UnsupportedOperationException("TODO");

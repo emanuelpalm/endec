@@ -1,7 +1,8 @@
-package tech.endec.internal;
+package tech.endec.internal.generator;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import tech.endec.internal.source.SourceWriter;
 
 import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.type.*;
@@ -102,7 +103,7 @@ public class ImportSet
         }
     }
 
-    public void writeTo(@Nonnull CodeWriter.Scope scope)
+    public void writeTo(@Nonnull SourceWriter.Scope scope)
     {
         for (var qualifiedName : qualifiedNames) {
             scope.line().write("import ").write(qualifiedName).write(';');
