@@ -16,7 +16,7 @@ public class SourceWriter
             throw new IllegalStateException("Root scope already used");
         }
         isUsed = true;
-        return new Scope(1);
+        return new Scope(0);
     }
 
     public @Nonnull SourceFile toFile(@Nonnull String name)
@@ -89,8 +89,6 @@ public class SourceWriter
 
         protected Scope(int depth)
         {
-            currentDepth += 1;
-
             this.depth = depth;
         }
 
@@ -103,6 +101,7 @@ public class SourceWriter
         public @Nonnull Scope scope()
         {
             throwIfOutOfSequence();
+            currentDepth += 1;
             return new Scope(depth + 1);
         }
 
