@@ -73,7 +73,7 @@ public record EncoderGenerator(
         for (var component : components) {
             var name = component.getSimpleName();
             method.line().write("m.nextKey().encodeString(\"").write(name).write("\");");
-            EncoderMember.write("m.nextValue()", "v", component, method);
+            EncoderWriting.write("m.nextValue()", "v", component, method);
             method.line();
         }
 

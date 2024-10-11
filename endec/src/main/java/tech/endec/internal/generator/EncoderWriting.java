@@ -12,9 +12,9 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 
-public final class EncoderMember
+public final class EncoderWriting
 {
-    private EncoderMember() {}
+    private EncoderWriting() {}
 
     public static void write(
             @Nonnull String encoderExpression,
