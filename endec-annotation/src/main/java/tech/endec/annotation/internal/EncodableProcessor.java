@@ -1,9 +1,9 @@
-package tech.endec.internal;
+package tech.endec.annotation.internal;
 
 import jakarta.annotation.Nonnull;
-import tech.endec.internal.audit.Audit;
-import tech.endec.internal.audit.AuditCode;
-import tech.endec.internal.generator.EncoderGenerator;
+import tech.endec.annotation.internal.audit.Audit;
+import tech.endec.annotation.internal.audit.AuditCode;
+import tech.endec.annotation.internal.generator.EncoderGenerator;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -12,7 +12,7 @@ import javax.lang.model.element.TypeElement;
 import java.util.HashSet;
 import java.util.Set;
 
-@SupportedAnnotationTypes("tech.endec.Encodable")
+@SupportedAnnotationTypes("tech.endec.annotation.Encodable")
 @SupportedSourceVersion(SourceVersion.RELEASE_23)
 public class EncodableProcessor extends AbstractProcessor
 {

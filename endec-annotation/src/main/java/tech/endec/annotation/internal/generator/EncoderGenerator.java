@@ -1,9 +1,9 @@
-package tech.endec.internal.generator;
+package tech.endec.annotation.internal.generator;
 
 import jakarta.annotation.Nonnull;
-import tech.endec.internal.audit.Audit;
-import tech.endec.internal.source.SourceFile;
-import tech.endec.internal.source.SourceWriter;
+import tech.endec.annotation.internal.audit.Audit;
+import tech.endec.annotation.internal.source.SourceFile;
+import tech.endec.annotation.internal.source.SourceWriter;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;

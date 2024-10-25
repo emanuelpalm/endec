@@ -1,7 +1,7 @@
-package tech.endec.internal.generator;
+package tech.endec.annotation.internal.generator;
 
 import jakarta.annotation.Nonnull;
-import tech.endec.internal.source.SourceWriter;
+import tech.endec.annotation.internal.source.SourceWriter;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;

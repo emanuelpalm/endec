@@ -1,8 +1,8 @@
-package tech.endec.internal.generator;
+package tech.endec.annotation.internal.generator;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import tech.endec.internal.source.SourceWriter;
+import tech.endec.annotation.internal.source.SourceWriter;
 
 import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.type.*;

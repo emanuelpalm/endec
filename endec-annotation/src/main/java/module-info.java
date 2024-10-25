@@ -1,7 +1,7 @@
-import tech.endec.internal.EncodableProcessor;
+import tech.endec.annotation.internal.EncodableProcessor;
 
 module tech.endec {
-    exports tech.endec;
+    exports tech.endec.annotation;
 
     provides javax.annotation.processing.Processor with EncodableProcessor;
 

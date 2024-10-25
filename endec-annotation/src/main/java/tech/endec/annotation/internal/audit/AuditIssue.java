@@ -1,4 +1,4 @@
-package tech.endec.internal.audit;
+package tech.endec.annotation.internal.audit;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;

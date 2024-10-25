@@ -1,4 +1,4 @@
-package tech.endec.internal.source;
+package tech.endec.annotation.internal.source;
 
 import jakarta.annotation.Nonnull;
 
