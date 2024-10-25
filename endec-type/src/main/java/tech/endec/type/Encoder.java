@@ -18,11 +18,11 @@ public interface Encoder
 
     void encodeLong(long value);
 
+    void encodeChar(char value);
+
     void encodeFloat(float value);
 
     void encodeDouble(double value);
-
-    void encodeChar(char value);
 
     void encodeCharSequence(@Nonnull CharSequence value);
 
@@ -41,9 +41,7 @@ public interface Encoder
 
     interface Map
     {
-        @Nonnull Encoder nextKey();
-
-        @Nonnull Encoder nextValue();
+        @Nonnull Encoder next(@Nonnull CharSequence key, int ordinal);
 
         void end();
     }

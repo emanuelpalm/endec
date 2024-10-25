@@ -1,18 +1,16 @@
 package tech.endec.json;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import tech.endec.json.strconv.CharSequenceToJson;
 import tech.endec.type.Encoder;
 import tech.endec.type.EncoderOutput;
 import tech.endec.type.ex.EncoderArgumentException;
 import tech.endec.type.ex.EncoderStateException;
-import tech.endec.type.ex.NotEncodableException;
 
 class JsonEncoderMap implements Encoder.Map
 {
     private final @Nonnull EncoderOutput output;
 
-    private boolean isAtValue = false;
     private boolean isEnded = false;
     private boolean isNotEmpty = false;
 
@@ -28,106 +26,39 @@ class JsonEncoderMap implements Encoder.Map
         this.expectedPairCount = expectedPairCount;
     }
 
-    @Override public @Nonnull Encoder nextKey()
+    @Override public @Nonnull Encoder next(@Nonnull CharSequence key, int ordinal)
     {
-        if (isAtValue) {
-            throw new EncoderStateException("expected value");
-        }
-        isAtValue = true;
-
         if (currentPairCount >= expectedPairCount) {
             throw new EncoderStateException("the " + expectedPairCount + " " +
                     "declared map pairs have already been encoded");
         }
         currentPairCount += 1;
 
-        return new JsonEncoder(output)
-        {
-            private final int id = currentPairCount;
-
-            @Override public void encodeNull()
-            {
-                throw new NotEncodableException(null, "the null value cannot " +
-                        "be used as name in a JSON object");
-            }
-
-            @Override public void encodeBoolean(boolean value)
-            {
-                throw new NotEncodableException(value, "a boolean cannot be " +
-                        "used as a name in a JSON object");
-            }
-
-            @Override public void encodeLong(long value)
-            {
-                throw new NotEncodableException(value, "an integer cannot be " +
-                        "used as a name in a JSON object");
-            }
-
-            @Override public void encodeDouble(double value)
-            {
-                throw new NotEncodableException(value, "a float cannot be " +
-                        "used as a name in a JSON object");
-            }
-
-            @Override @Nonnull public List encodeList(@Nullable Object prototype, int size)
-            {
-                throw new NotEncodableException(prototype, "a list cannot be " +
-                        "used as a name in a JSON object");
-            }
-
-            @Override @Nonnull public Map encodeMap(@Nullable Object prototype, int size)
-            {
-                throw new NotEncodableException(prototype, "a map cannot be " +
-                        "used as a name in a JSON object");
-            }
-
-            @Override protected void beforeEncode()
-            {
-                super.beforeEncode();
-
-                if (id != currentPairCount) {
-                    throw new EncoderStateException("key out of sequence");
-                }
-
-                if (isEnded) {
-                    throw new EncoderStateException("adding key to ended " +
-                            "map encoder");
-                }
-
-                if (isNotEmpty) {
-                    output.write((byte) ',');
-                } else {
-                    isNotEmpty = true;
-                }
-            }
-        };
-    }
-
-    @Override public @Nonnull Encoder nextValue()
-    {
-        if (!isAtValue) {
-            throw new EncoderStateException("expected key");
+        if (isNotEmpty) {
+            output.write((byte) ',');
+        } else {
+            isNotEmpty = true;
         }
-        isAtValue = false;
+
+        CharSequenceToJson.format(key, output);
+
+        output.write((byte) ':');
 
         return new JsonEncoder(output)
         {
-            private final int id = currentPairCount;
+            private final int sequenceNumber = currentPairCount;
 
             @Override protected void beforeEncode()
             {
                 super.beforeEncode();
 
-                if (id != currentPairCount) {
+                if (sequenceNumber != currentPairCount) {
                     throw new EncoderStateException("value out of sequence");
                 }
-
                 if (isEnded) {
                     throw new EncoderStateException("adding value to ended " +
                             "map encoder");
                 }
-
-                output.write((byte) ':');
             }
         };
     }
@@ -137,9 +68,6 @@ class JsonEncoderMap implements Encoder.Map
         if (currentPairCount < expectedPairCount) {
             throw new EncoderStateException(expectedPairCount + " pairs were " +
                     "declared, but only " + currentPairCount + " were encoded");
-        }
-        if (isAtValue) {
-            throw new EncoderStateException("map encoder has dangling key");
         }
         if (isEnded) {
             throw new EncoderStateException("map encoder already ended");

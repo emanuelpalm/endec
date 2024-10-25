@@ -51,6 +51,12 @@ public class JsonEncoder implements Encoder
         LongToJson.format(value, output);
     }
 
+    @Override public void encodeChar(char value)
+    {
+        beforeEncode();
+        CharSequenceToJson.format(String.valueOf(value), output);
+    }
+
     @Override public void encodeFloat(float value)
     {
         beforeEncode();
@@ -61,12 +67,6 @@ public class JsonEncoder implements Encoder
     {
         beforeEncode();
         DoubleToJson.format(value, output);
-    }
-
-    @Override public void encodeChar(char value)
-    {
-        beforeEncode();
-        CharSequenceToJson.format(String.valueOf(value), output);
     }
 
     @Override public void encodeCharSequence(@Nonnull CharSequence value)

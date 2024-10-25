@@ -68,13 +68,12 @@ public record EncoderGenerator(
         method.line().write('}');
         method.line();
         method.line().write("var m = e.encodeMap(v, ").write(components.size()).write(");");
-        method.line();
 
-        for (var component : components) {
+        for (int i = 0; i < components.size(); i++) {
+            var component = components.get(i);
             var name = component.getSimpleName();
-            method.line().write("m.nextKey().encodeString(\"").write(name).write("\");");
-            EncoderWriting.write("m.nextValue()", "v", component, method);
-            method.line();
+            var expression = "m.next(\"" + name + "\", " + i + ")";
+            EncoderWriting.write(expression, "v", component, method);
         }
 
         method.line().write("m.end();");
