@@ -66,13 +66,13 @@ public class JsonEncoder implements Encoder
     @Override public void encodeChar(char value)
     {
         beforeEncode();
-        StringToJson.format(String.valueOf(value), output);
+        CharSequenceToJson.format(String.valueOf(value), output);
     }
 
-    @Override public void encodeString(@Nonnull String value)
+    @Override public void encodeCharSequence(@Nonnull CharSequence value)
     {
         beforeEncode();
-        StringToJson.format(value, output);
+        CharSequenceToJson.format(value, output);
     }
 
     @Override public void encodeByteArray(@Nonnull byte[] value)

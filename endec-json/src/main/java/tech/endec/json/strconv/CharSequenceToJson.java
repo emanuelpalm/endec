@@ -3,7 +3,7 @@ package tech.endec.json.strconv;
 import jakarta.annotation.Nonnull;
 import tech.endec.type.EncoderOutput;
 
-public final class StringToJson
+public final class CharSequenceToJson
 {
     // Keys used to represent escaped string characters.
     static final byte BA = 'b';  // 0x08
@@ -37,14 +37,14 @@ public final class StringToJson
             '0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
-    private StringToJson() {}
+    private CharSequenceToJson() {}
 
-    public static void format(@Nonnull String value, @Nonnull EncoderOutput output)
+    public static void format(@Nonnull CharSequence value, @Nonnull EncoderOutput output)
     {
         output.write((byte) '"');
 
         for (var i = 0; i < value.length(); ) {
-            var cp = value.codePointAt(i);
+            var cp = Character.codePointAt(value, i);
 
             if (cp <= 0x7F) {
                 var escape = TABLE_ESCAPES[cp];

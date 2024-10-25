@@ -51,7 +51,7 @@ public final class EncoderWriting
     {
         var line = scope.line();
         if (type.toString().equals("java.lang.String")) {
-            line.write(encoderExpression).write(".encodeString(");
+            line.write(encoderExpression).write(".encodeCharSequence(");
             write(memberExpression, element, line);
             line.write(");");
         }

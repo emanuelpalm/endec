@@ -24,7 +24,7 @@ public interface Encoder
 
     void encodeChar(char value);
 
-    void encodeString(@Nonnull String value);
+    void encodeCharSequence(@Nonnull CharSequence value);
 
     void encodeByteArray(@Nonnull byte[] value);
 
