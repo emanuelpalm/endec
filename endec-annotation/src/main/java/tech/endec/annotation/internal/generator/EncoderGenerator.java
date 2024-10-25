@@ -31,7 +31,7 @@ public record EncoderGenerator(
         var components = element.getRecordComponents();
 
         var imports = ImportSet.createForClassInPackage(packageElement.toString());
-        imports.add("tech.endec.type.Encoder");
+        imports.add("tech.endec.encoder.Encoder");
         for (var component : components) {
             imports.add(component.getAccessor().getReturnType());
         }

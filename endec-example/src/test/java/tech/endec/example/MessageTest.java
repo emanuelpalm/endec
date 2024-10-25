@@ -1,8 +1,8 @@
 package tech.endec.example;
 
 import org.junit.jupiter.api.Test;
-import tech.endec.json.JsonEncoder;
-import tech.endec.type.EncoderOutput;
+import tech.endec.encoder.json.JsonEncoder;
+import tech.endec.encoder.EncoderOutput;
 
 import java.nio.charset.StandardCharsets;
 

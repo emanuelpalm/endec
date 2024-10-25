@@ -1,5 +1,5 @@
 include \
         "endec-annotation",
-        "endec-example",
-        "endec-json",
-        "endec-type"
+        "endec-encoder",
+        "endec-encoder-json",
+        "endec-example"
