@@ -26,8 +26,11 @@ class JsonEncoderMap implements Encoder.Map
         this.expectedPairCount = expectedPairCount;
     }
 
-    @Override public @Nonnull Encoder next(@Nonnull CharSequence key, int ordinal)
+    @Override public @Nonnull Encoder next(int ordinal, @Nonnull CharSequence key)
     {
+        if (isEnded) {
+            throw new EncoderStateException("adding pair to ended map encoder");
+        }
         if (currentPairCount >= expectedPairCount) {
             throw new EncoderStateException("the " + expectedPairCount + " " +
                     "declared map pairs have already been encoded");
@@ -36,7 +39,8 @@ class JsonEncoderMap implements Encoder.Map
 
         if (isNotEmpty) {
             output.write((byte) ',');
-        } else {
+        }
+        else {
             isNotEmpty = true;
         }
 

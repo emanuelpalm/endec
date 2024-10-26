@@ -3,11 +3,10 @@ package tech.endec.encoder;
 import jakarta.annotation.Nonnull;
 import tech.endec.encoder.exception.EncoderOutputException;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class EncoderOutputStream implements Closeable, EncoderOutput
+public class EncoderOutputStream extends OutputStream implements EncoderOutput
 {
     private final @Nonnull OutputStream inner;
 
@@ -17,25 +16,32 @@ public class EncoderOutputStream implements Closeable, EncoderOutput
     {
         try {
             inner.write(b);
-        } catch (IOException exception) {
+        }
+        catch (IOException exception) {
             throw new EncoderOutputException(exception);
         }
     }
 
-    @Override public void write(byte[] source, int offset, int length)
+    @Override public void write(int b) throws IOException { write((byte) b); }
+
+    @Override public void write(@Nonnull byte[] source) { write(source, 0, source.length); }
+
+    @Override public void write(@Nonnull byte[] source, int offset, int length)
     {
         try {
             inner.write(source, offset, length);
-        } catch (IOException exception) {
+        }
+        catch (IOException exception) {
             throw new EncoderOutputException(exception);
         }
     }
 
-    public void flush()
+    @Override public void flush()
     {
         try {
             inner.flush();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new EncoderOutputException(e);
         }
     }
@@ -44,7 +50,8 @@ public class EncoderOutputStream implements Closeable, EncoderOutput
     {
         try {
             inner.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new EncoderOutputException(e);
         }
     }

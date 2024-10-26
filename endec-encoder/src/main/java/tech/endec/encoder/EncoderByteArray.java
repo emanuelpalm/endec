@@ -2,12 +2,12 @@ package tech.endec.encoder;
 
 import jakarta.annotation.Nonnull;
 
-public class EncoderOutputByteArray implements EncoderOutput
+public class EncoderByteArray implements EncoderOutput
 {
     private final @Nonnull byte[] inner;
     private int index;
 
-    public EncoderOutputByteArray(@Nonnull byte[] inner) { this.inner = inner; }
+    public EncoderByteArray(@Nonnull byte[] inner) { this.inner = inner; }
 
     @Override public void write(byte b)
     {

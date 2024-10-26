@@ -80,7 +80,7 @@ public final class LongToJson
             buffer[index + 3] = TABLE_DECIMAL_DIGIT_PAIRS[d2 + 1];
         }
 
-        // If we reach here, `value <= 9999`, which means that we will need to
+        // At this point, `value <= 9999`, which means that we will need to
         // write at most 4 more digits.
 
         // Decode 2 more digits, if >2 digits.

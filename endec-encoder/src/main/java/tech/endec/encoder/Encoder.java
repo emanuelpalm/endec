@@ -3,7 +3,6 @@ package tech.endec.encoder;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-@SuppressWarnings("unused")
 public interface Encoder
 {
     void encodeNull();
@@ -41,7 +40,7 @@ public interface Encoder
 
     interface Map
     {
-        @Nonnull Encoder next(@Nonnull CharSequence key, int ordinal);
+        @Nonnull Encoder next(int ordinal, @Nonnull CharSequence key);
 
         void end();
     }

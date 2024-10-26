@@ -4,11 +4,11 @@ import jakarta.annotation.Nonnull;
 
 import java.nio.ByteBuffer;
 
-public class EncoderOutputBuffer implements EncoderOutput
+public class EncoderByteBuffer implements EncoderOutput
 {
     private final @Nonnull ByteBuffer inner;
 
-    public EncoderOutputBuffer(@Nonnull ByteBuffer inner) { this.inner = inner; }
+    public EncoderByteBuffer(@Nonnull ByteBuffer inner) { this.inner = inner; }
 
     @Override public void write(byte b) { inner.put(b); }
 
